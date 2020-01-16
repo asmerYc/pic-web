@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="container">
     <h1>{{ msg }}</h1>
     <el-button type="warning" @click="toLogin">登录</el-button>
   </div>
@@ -21,4 +21,8 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style scoped>
+.container {
+  
+}
+</style>
