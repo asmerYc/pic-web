@@ -1,19 +1,24 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
+    <div v-if="$route.meta.keepAlive">
+      <header-vue></header-vue>
+      <router-view></router-view>
+    </div>
+    <router-view v-if="!$route.meta.keepAlive"></router-view>
   </div>
 </template>
 
 <script>
+import headerVue from './view/header'
 export default {
-  name: 'App'
+  name: 'App',
+  components: { headerVue }
 }
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
