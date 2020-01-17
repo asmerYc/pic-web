@@ -33,7 +33,12 @@
                   <div class="tags-type">选择标签：</div>
                   <div class="tags-row">
                     <template v-for="(item,index) in tagsList">
-                      <span v-if="index < 8" :key="index">{{ item.name}}</span>
+                      <span
+                        v-if="index < 8"
+                        :class="item.selected?'active':null"
+                        @click="selectTags(item.id)"
+                        :key="index"
+                      >{{ item.name}}</span>
                     </template>
                   </div>
                   <div class="tags-more"></div>
@@ -42,7 +47,12 @@
                   <div class="tags-type">选择上传人：</div>
                   <div class="tags-row">
                     <template v-for="(item,index) in uploadersList">
-                      <span v-if="index < 8" :key="index">{{ item.name}}</span>
+                      <span
+                        v-if="index < 8"
+                        :class="item.selected?'active':null"
+                        @click="selectUploaders(item.id)"
+                        :key="index"
+                      >{{ item.name}}</span>
                     </template>
                   </div>
                   <div class="tags-more"></div>
@@ -84,7 +94,7 @@
                   <span class="photographer">摄影师：鹿久久</span>
                   <div class="photos">
                     <div v-for="(i,index) in count" class="single-photo" :key="index">
-                      <span class="choose-icon"></span>
+                      <span :class="['choose-icon','choosed']"></span>
                       <img src="../../assets/images/08_02.png" alt />
                     </div>
                   </div>
@@ -92,9 +102,22 @@
               </div>
             </template>
           </el-main>
+          <el-footer class="footer" height="56px">
+            <div class="footer-left">
+              <el-button>取消</el-button>
+            </div>
+            <div class="footer-right">
+              <el-button>提交</el-button>
+              <el-button>下载</el-button>
+            </div>
+          </el-footer>
         </el-container>
       </el-container>
     </div>
+    <!-- 返回顶部 -->
+    <el-backtop class="backtop" target=".main" :right="18" :bottom="110" :visibility-height="10">
+      <img src="../../assets/images/07_25.png" />
+    </el-backtop>
   </div>
 </template>
 
@@ -103,7 +126,7 @@ import headerVue from '../header'
 export default {
   data () {
     return {
-      count: 20,
+      count: 50,
       page: 0, //  班级列表page
       selectEnterYear: '', // 选中的入学年份
       inputTagsSearch: '', // input标签搜索
@@ -165,7 +188,7 @@ export default {
   },
   methods: {
     getData () {
-      let list = [
+      this.classList = [
         { id: 1, name: '2018级1班' },
         { id: 2, name: '2015级6班' },
         { id: 3, name: '2018级1班' },
@@ -231,24 +254,44 @@ export default {
         { id: 19, name: '摄影师' },
         { id: 20, name: '摄影师' }
       ]
-      list.forEach(item => {
+      this.classList.forEach(item => {
         item.selected = false
       })
-      this.classList = list
+      this.tagsList.forEach(item => {
+        item.selected = false
+      })
+      this.uploadersList.forEach(item => {
+        item.selected = false
+      })
+      this.classList = JSON.parse(JSON.stringify(this.classList))
+      this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
+      this.uploadersList = JSON.parse(JSON.stringify(this.uploadersList))
     },
     load () {
       this.page += 1
     },
     selectClass (id) {
-      let list = this.classList
-      list.forEach(item => {
+      this.classList.forEach(item => {
         item.selected = false
         if (id === item.id) {
           item.selected = true
         }
       })
-      this.classList = list
-    }
+    },
+    selectTags (id) {
+      this.tagsList.forEach(item => {
+        if (id === item.id) {
+          item.selected = !item.selected
+        }
+      })
+    },
+    selectUploaders (id) {
+      this.uploadersList.forEach(item => {
+        if (id === item.id) {
+          item.selected = !item.selected
+        }
+      })
+    },
   },
   components: { headerVue }
 }
@@ -368,8 +411,8 @@ export default {
 .date-tag {
   display: inline-block;
   height: 22px;
-  line-height: 13px;
-  padding: 3px 12px;
+  line-height: 20px;
+  padding: 0 12px;
   margin-right: 30px;
   border-radius: 2px;
   border: 1px solid #acacac;
@@ -379,6 +422,7 @@ export default {
 .tags-row span.active {
   color: white;
   background-color: #f8b626;
+  border: 1px solid #f8b626;
 }
 .year-select,
 .month-select,
@@ -424,7 +468,8 @@ export default {
 }
 /* 内容 */
 .main {
-  padding: 12px 54px;
+  height: calc(100vh - 306px);
+  padding: 12px 54px 0;
 }
 .date-tag {
   margin-bottom: 10px;
@@ -433,14 +478,14 @@ export default {
   display: inline-block;
   color: #acacac;
   font-weight: bold;
-  margin-bottom: 10px;
 }
 .photos {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   background-color: #f1f1f1;
   padding-top: 10px;
   padding-left: 10px;
+  margin-top: 10px;
 }
 .single-photo {
   position: relative;
@@ -454,8 +499,13 @@ export default {
   position: absolute;
   width: 18px;
   height: 18px;
+  top: 5px;
+  right: 5px;
   background-image: url("../../assets/images/选择2_16.png");
   background-repeat: no-repeat;
+}
+.single-photo .choose-icon.choosed {
+  background-image: url("../../assets/images/选择_14.png");
 }
 .single-photo img {
   position: absolute;
@@ -465,5 +515,29 @@ export default {
   width: 100%;
   max-width: 100px;
   height: auto;
+}
+/* 底部按钮 */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 64px;
+}
+.footer button {
+  width: 93px;
+  height: 32px;
+  padding: 0px 20px;
+}
+.footer /deep/ .el-button:focus,
+.el-button:hover {
+  color: white;
+  border-color: #f8b626;
+  background-color: #f8b626;
+}
+/* 返回顶部 */
+.backtop {
+  background-color: #b8b8b8;
+  width: 45px;
+  height: 45px;
+  border-radius: 0;
 }
 </style>
