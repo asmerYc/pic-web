@@ -1,25 +1,33 @@
 <template>
-  <div class="home">
-    <el-row>
-      <el-button>默认按钮</el-button>
-      <el-button type="primary">主要按钮</el-button>
-      <el-button type="success">成功按钮</el-button>
-      <el-button type="info">信息按钮</el-button>
-      <el-button type="warning">警告按钮</el-button>
-      <el-button type="danger">危险按钮</el-button>
-    </el-row>
+  <div>
+    <header-vue></header-vue>
+    <div class="home">
+      <el-container>
+        <el-aside class="aside" width="245px">Aside</el-aside>
+        <el-container>
+          <el-header class="header">Header</el-header>
+          <el-main class="main">Main</el-main>
+        </el-container>
+      </el-container>
+    </div>
   </div>
 </template>
 
 <script>
+import headerVue from '../header'
 export default {
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
     }
-  }
+  },
+  components: { headerVue }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style scoped>
+.aside {
+  height: 100%;
+}
+.main {
+}
+</style>

@@ -1,11 +1,15 @@
 <template>
   <div class="header">
-    <h1>{{ msg }}</h1>
-    <el-row>
-      <el-col :span="24">
-        <div class="grid-content bg-purple-dark"></div>
-      </el-col>
-    </el-row>
+    <div class="left">
+      <img class="logo-img" src="../assets/images/logo.png" alt />
+      <span class="logo-name">西北工业大学附属小学</span>
+      <span class="line">|</span>
+      <span class="system-name">照片管理系统</span>
+    </div>
+    <div class="right setting" @click="toSet">
+      <img class="set-icon" src="../assets/images/设置_03.png" alt />
+      <span>管理员设置</span>
+    </div>
   </div>
 </template>
 
@@ -13,11 +17,47 @@
 export default {
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+    }
+  },
+  methods: {
+    toSet () {
     }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style scoped>
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 70px;
+  padding: 0 54px 0 45px;
+  color: #f0f0f0;
+  background-color: #f8b62b;
+}
+.left,
+.right {
+  display: flex;
+  align-items: center;
+}
+.logo-img {
+  width: 32px;
+  height: 44px;
+  margin-right: 30px;
+}
+.logo-name {
+  font-size: 18px;
+}
+.line {
+  margin: 0 10px;
+  font-size: 18px;
+}
+.setting {
+  cursor: pointer;
+}
+.set-icon {
+  margin-right: 10px;
+}
+</style>
