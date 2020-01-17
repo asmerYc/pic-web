@@ -33,15 +33,16 @@
                   <div class="tags-type">选择标签：</div>
                   <div class="tags-row">
                     <template v-for="(item,index) in tagsList">
-                      <span v-if="index < 10" :key="index">{{ item.name}}</span>
+                      <span v-if="index < 8" :key="index">{{ item.name}}</span>
                     </template>
                   </div>
+                  <div class="tags-more"></div>
                 </div>
                 <div class="tags-container">
                   <div class="tags-type">选择上传人：</div>
                   <div class="tags-row">
                     <template v-for="(item,index) in uploadersList">
-                      <span v-if="index < 10" :key="index">{{ item.name}}</span>
+                      <span v-if="index < 8" :key="index">{{ item.name}}</span>
                     </template>
                   </div>
                   <div class="tags-more"></div>
@@ -68,10 +69,29 @@
                   </div>
                 </div>
               </div>
+              <div class="addPhotoBtn">
+                <img src="../../assets/images/添加_06.png" />
+                <span>添加照片</span>
+              </div>
             </div>
           </el-header>
           <!-- 照片内容 -->
-          <el-main class="main">Main</el-main>
+          <el-main class="main">
+            <template>
+              <div class="photos-item-container">
+                <span class="date-tag">2018年5月4日</span>
+                <div>
+                  <span class="photographer">摄影师：鹿久久</span>
+                  <div class="photos">
+                    <div v-for="(i,index) in count" class="single-photo" :key="index">
+                      <span class="choose-icon"></span>
+                      <img src="../../assets/images/08_02.png" alt />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </el-main>
         </el-container>
       </el-container>
     </div>
@@ -83,6 +103,7 @@ import headerVue from '../header'
 export default {
   data () {
     return {
+      count: 20,
       page: 0, //  班级列表page
       selectEnterYear: '', // 选中的入学年份
       inputTagsSearch: '', // input标签搜索
@@ -92,26 +113,33 @@ export default {
       time: {
         year: '',
         month: ''
-      },// 日期
-      yearList: [{
-        value: '',
-        label: '年份'
-      }, {
-        value: '2019',
-        label: '2019'
-      }, {
-        value: '2018',
-        label: '2018'
-      }, {
-        value: '2017',
-        label: '2017'
-      }, {
-        value: '2016',
-        label: '2016'
-      }, {
-        value: '2015',
-        label: '2015'
-      }],
+      }, // 日期
+      yearList: [
+        {
+          value: '',
+          label: '年份'
+        },
+        {
+          value: '2019',
+          label: '2019'
+        },
+        {
+          value: '2018',
+          label: '2018'
+        },
+        {
+          value: '2017',
+          label: '2017'
+        },
+        {
+          value: '2016',
+          label: '2016'
+        },
+        {
+          value: '2015',
+          label: '2015'
+        }
+      ],
       monthList: [
         {
           value: '',
@@ -120,10 +148,12 @@ export default {
         {
           value: '1月',
           label: '1月'
-        }, {
+        },
+        {
           value: '2月',
           label: '2月'
-        }, {
+        },
+        {
           value: '3月',
           label: '3月'
         }
@@ -135,10 +165,75 @@ export default {
   },
   methods: {
     getData () {
-      let list = [{ id: 1, name: '2018级1班' }, { id: 2, name: '2015级6班' }, { id: 3, name: '2018级1班' }, { id: 4, name: '2018级1班' }, { id: 5, name: '2018级1班' }, { id: 6, name: '2018级1班' }, { id: 7, name: '2018级1班' }, { id: 8, name: '2018级1班' }, { id: 9, name: '2018级1班' }, { id: 10, name: '2018级1班' }, { id: 11, name: '2018级1班' }, { id: 12, name: '2018级1班' }, { id: 13, name: '2018级1班' }, { id: 14, name: '2018级1班' }, { id: 15, name: '2018级1班' }, { id: 16, name: '2018级1班' }, { id: 17, name: '2018级1班' }, { id: 18, name: '2018级1班' }, { id: 19, name: '2018级1班' }, { id: 20, name: '2018级1班' }]
-      this.tagsList = [{ id: 1, name: '运动会' }, { id: 2, name: '运动会' }, { id: 3, name: '运动会' }, { id: 4, name: '运动会' }, { id: 5, name: '运动会' }, { id: 6, name: '运动会' }, { id: 7, name: '运动会' }, { id: 8, name: '运动会' }, { id: 9, name: '运动会' }, { id: 10, name: '运动会' }, { id: 11, name: '运动会' }, { id: 12, name: '运动会' }, { id: 13, name: '运动会' }, { id: 14, name: '运动会' }, { id: 15, name: '运动会' }, { id: 16, name: '运动会' }, { id: 17, name: '运动会' }, { id: 18, name: '运动会' }, { id: 19, name: '运动会' }, { id: 20, name: '运动会' }]
-      this.uploadersList = [{ id: 1, name: '摄影师' }, { id: 2, name: '摄影师' }, { id: 3, name: '摄影师' }, { id: 4, name: '摄影师' }, { id: 5, name: '摄影师' }, { id: 6, name: '摄影师' }, { id: 7, name: '摄影师' }, { id: 8, name: '摄影师' }, { id: 9, name: '摄影师' }, { id: 10, name: '摄影师' }, { id: 11, name: '摄影师' }, { id: 12, name: '摄影师' }, { id: 13, name: '摄影师' }, { id: 14, name: '摄影师' }, { id: 15, name: '摄影师' }, { id: 16, name: '摄影师' }, { id: 17, name: '摄影师' }, { id: 18, name: '摄影师' }, { id: 19, name: '摄影师' }, { id: 20, name: '摄影师' }]
-      list.forEach(item => { item.selected = false })
+      let list = [
+        { id: 1, name: '2018级1班' },
+        { id: 2, name: '2015级6班' },
+        { id: 3, name: '2018级1班' },
+        { id: 4, name: '2018级1班' },
+        { id: 5, name: '2018级1班' },
+        { id: 6, name: '2018级1班' },
+        { id: 7, name: '2018级1班' },
+        { id: 8, name: '2018级1班' },
+        { id: 9, name: '2018级1班' },
+        { id: 10, name: '2018级1班' },
+        { id: 11, name: '2018级1班' },
+        { id: 12, name: '2018级1班' },
+        { id: 13, name: '2018级1班' },
+        { id: 14, name: '2018级1班' },
+        { id: 15, name: '2018级1班' },
+        { id: 16, name: '2018级1班' },
+        { id: 17, name: '2018级1班' },
+        { id: 18, name: '2018级1班' },
+        { id: 19, name: '2018级1班' },
+        { id: 20, name: '2018级1班' }
+      ]
+      this.tagsList = [
+        { id: 1, name: '运动会' },
+        { id: 2, name: '运动会' },
+        { id: 3, name: '运动会' },
+        { id: 4, name: '运动会' },
+        { id: 5, name: '运动会' },
+        { id: 6, name: '运动会' },
+        { id: 7, name: '运动会' },
+        { id: 8, name: '运动会' },
+        { id: 9, name: '运动会' },
+        { id: 10, name: '运动会' },
+        { id: 11, name: '运动会' },
+        { id: 12, name: '运动会' },
+        { id: 13, name: '运动会' },
+        { id: 14, name: '运动会' },
+        { id: 15, name: '运动会' },
+        { id: 16, name: '运动会' },
+        { id: 17, name: '运动会' },
+        { id: 18, name: '运动会' },
+        { id: 19, name: '运动会' },
+        { id: 20, name: '运动会' }
+      ]
+      this.uploadersList = [
+        { id: 1, name: '摄影师' },
+        { id: 2, name: '摄影师' },
+        { id: 3, name: '摄影师' },
+        { id: 4, name: '摄影师' },
+        { id: 5, name: '摄影师' },
+        { id: 6, name: '摄影师' },
+        { id: 7, name: '摄影师' },
+        { id: 8, name: '摄影师' },
+        { id: 9, name: '摄影师' },
+        { id: 10, name: '摄影师' },
+        { id: 11, name: '摄影师' },
+        { id: 12, name: '摄影师' },
+        { id: 13, name: '摄影师' },
+        { id: 14, name: '摄影师' },
+        { id: 15, name: '摄影师' },
+        { id: 16, name: '摄影师' },
+        { id: 17, name: '摄影师' },
+        { id: 18, name: '摄影师' },
+        { id: 19, name: '摄影师' },
+        { id: 20, name: '摄影师' }
+      ]
+      list.forEach(item => {
+        item.selected = false
+      })
       this.classList = list
     },
     load () {
@@ -230,6 +325,7 @@ export default {
 }
 /* 内容头部 */
 .header {
+  position: relative;
   padding: 20px 54px;
   border-bottom: 1px solid #e5e5e5;
   background-color: #f8f8f8;
@@ -268,7 +364,8 @@ export default {
   text-align-last: justify;
   margin-bottom: 10px;
 }
-.tags-row span {
+.tags-row span,
+.date-tag {
   display: inline-block;
   height: 22px;
   line-height: 13px;
@@ -284,14 +381,13 @@ export default {
   background-color: #f8b626;
 }
 .year-select,
-.month-select {
+.month-select,
+.tags-type-more {
   width: 80px;
   height: 22px;
 }
 .year-select {
   margin-right: 15px;
-}
-.month-select {
 }
 .tags-row /deep/ .el-input__inner {
   height: 22px;
@@ -309,8 +405,65 @@ export default {
 .tags-row /deep/ .el-select .el-input .el-select__caret {
   color: #f8b626;
 }
+.addPhotoBtn {
+  position: absolute;
+  right: 120px;
+  top: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100px;
+  height: 100px;
+  color: white;
+  background-color: #f8b626;
+  cursor: pointer;
+}
+.addPhotoBtn img {
+  margin-bottom: 5px;
+}
 /* 内容 */
 .main {
-  padding: 10px 54px;
+  padding: 12px 54px;
+}
+.date-tag {
+  margin-bottom: 10px;
+}
+.photographer {
+  display: inline-block;
+  color: #acacac;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.photos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  background-color: #f1f1f1;
+  padding-top: 10px;
+  padding-left: 10px;
+}
+.single-photo {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+}
+.single-photo .choose-icon {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background-image: url("../../assets/images/选择2_16.png");
+  background-repeat: no-repeat;
+}
+.single-photo img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 100px;
+  height: auto;
 }
 </style>
