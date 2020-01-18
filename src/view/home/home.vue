@@ -1,119 +1,127 @@
 <template>
   <div>
     <header-vue></header-vue>
-    <div class="home">
+    <el-container class="home">
+      <!-- 左侧边栏 -->
+      <el-aside class="aside" width="245px">
+        <el-input class="search" placeholder="按入学年份搜索" v-model="selectEnterYear">
+          <i slot="suffix" class="el-input__icon el-icon-search"></i>
+        </el-input>
+        <div class="search-title">学校图片</div>
+        <div class="class-list">
+          <ul class="infinite-list" v-infinite-scroll="load" style="overflow:auto">
+            <li
+              v-for="(item,index) in classList"
+              :class="['infinite-list-item','class-item',item.selected?'active':null ]"
+              :key="index"
+              @click="selectClass( item.id)"
+            >{{ item.name }}</li>
+          </ul>
+        </div>
+      </el-aside>
+      <!-- 右侧内容 -->
       <el-container>
-        <!-- 左侧边栏 -->
-        <el-aside class="aside" width="245px">
-          <el-input class="search" placeholder="按入学年份搜索" v-model="selectEnterYear">
-            <i slot="suffix" class="el-input__icon el-icon-search"></i>
-          </el-input>
-          <div class="search-title">学校图片</div>
-          <div class="class-list">
-            <ul class="infinite-list" v-infinite-scroll="load" style="overflow:auto">
-              <li
-                v-for="(item,index) in classList"
-                :class="['infinite-list-item','class-item',item.selected?'active':null ]"
-                :key="index"
-                @click="selectClass( item.id)"
-              >{{ item.name }}</li>
-            </ul>
-          </div>
-        </el-aside>
-        <!-- 右侧内容 -->
-        <el-container>
-          <!-- 头部标签 -->
-          <el-header class="header" height="180px">
+        <!-- 头部标签 -->
+        <el-header class="header" height="180px">
+          <div>
+            <el-input class="tag-search" v-model="inputTagsSearch" placeholder="请输入内容">
+              <el-button class="tag-search-btn" slot="append" icon="el-icon-search"></el-button>
+            </el-input>
             <div>
-              <el-input class="tag-search" v-model="inputTagsSearch" placeholder="请输入内容">
-                <el-button class="tag-search-btn" slot="append" icon="el-icon-search"></el-button>
-              </el-input>
+              <div class="tags-container">
+                <div class="tags-type">选择标签：</div>
+                <div class="tags-row">
+                  <template v-for="(item,index) in tagsList">
+                    <span v-if="index < 8" @click="selectTags(item)" :key="index">{{ item.name}}</span>
+                  </template>
+                </div>
+                <div class="tags-more"></div>
+              </div>
+              <div class="tags-container">
+                <div class="tags-type">选择上传人：</div>
+                <div class="tags-row">
+                  <template v-for="(item,index) in uploadersList">
+                    <span
+                      v-if="index < 8"
+                      @click="selectUploaders(item)"
+                      :key="index"
+                    >{{ item.name}}</span>
+                  </template>
+                </div>
+                <div class="tags-more"></div>
+              </div>
+              <div class="tags-container">
+                <div class="tags-type">选择日期：</div>
+                <div class="tags-row">
+                  <el-select
+                    class="year-select"
+                    v-model="time.year"
+                    @change="yearSelect($event)"
+                    placeholder="年份"
+                  >
+                    <el-option
+                      v-for="(item,index) in yearList"
+                      :key="index"
+                      :label="item.label"
+                      :value="item.value"
+                    ></el-option>
+                  </el-select>
+                  <el-select
+                    class="month-select"
+                    v-model="time.month"
+                    @change="monthSelect($event)"
+                    placeholder="月份"
+                  >
+                    <el-option
+                      v-for="(item,index) in monthList"
+                      :key="index"
+                      :label="item.label"
+                      :value="item.value"
+                    ></el-option>
+                  </el-select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="addPhotoBtn">
+            <img src="../../assets/images/添加_06.png" />
+            <span>添加照片</span>
+          </div>
+        </el-header>
+        <!-- 照片内容 -->
+        <el-main class="main">
+          <template>
+            <div class="photos-item-container">
+              <span class="date-tag">2018年5月4日</span>
               <div>
-                <div class="tags-container">
-                  <div class="tags-type">选择标签：</div>
-                  <div class="tags-row">
-                    <template v-for="(item,index) in tagsList">
-                      <span
-                        v-if="index < 8"
-                        :class="item.selected?'active':null"
-                        @click="selectTags(item.id)"
-                        :key="index"
-                      >{{ item.name}}</span>
-                    </template>
-                  </div>
-                  <div class="tags-more"></div>
-                </div>
-                <div class="tags-container">
-                  <div class="tags-type">选择上传人：</div>
-                  <div class="tags-row">
-                    <template v-for="(item,index) in uploadersList">
-                      <span
-                        v-if="index < 8"
-                        :class="item.selected?'active':null"
-                        @click="selectUploaders(item.id)"
-                        :key="index"
-                      >{{ item.name}}</span>
-                    </template>
-                  </div>
-                  <div class="tags-more"></div>
-                </div>
-                <div class="tags-container">
-                  <div class="tags-type">选择日期：</div>
-                  <div class="tags-row">
-                    <el-select class="year-select" v-model="time.year" placeholder="年份">
-                      <el-option
-                        v-for="(item,index) in yearList"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.value"
-                      ></el-option>
-                    </el-select>
-                    <el-select class="month-select" v-model="time.month" placeholder="月份">
-                      <el-option
-                        v-for="(item,index) in monthList"
-                        :key="index"
-                        :label="item.label"
-                        :value="item.value"
-                      ></el-option>
-                    </el-select>
+                <span class="photographer">摄影师：鹿久久</span>
+                <div class="photos">
+                  <div v-for="(i,index) in count" class="single-photo" :key="index">
+                    <span v-if="onEdit" :class="['choose-icon','choosed']"></span>
+                    <img src="../../assets/images/08_02.png" alt />
                   </div>
                 </div>
               </div>
-              <div class="addPhotoBtn">
-                <img src="../../assets/images/添加_06.png" />
-                <span>添加照片</span>
-              </div>
             </div>
-          </el-header>
-          <!-- 照片内容 -->
-          <el-main class="main">
-            <template>
-              <div class="photos-item-container">
-                <span class="date-tag">2018年5月4日</span>
-                <div>
-                  <span class="photographer">摄影师：鹿久久</span>
-                  <div class="photos">
-                    <div v-for="(i,index) in count" class="single-photo" :key="index">
-                      <span :class="['choose-icon','choosed']"></span>
-                      <img src="../../assets/images/08_02.png" alt />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </el-main>
-          <el-footer class="footer" height="56px">
-            <div class="footer-left">
-              <el-button>取消</el-button>
-            </div>
-            <div class="footer-right">
-              <el-button>提交</el-button>
-              <el-button>下载</el-button>
-            </div>
-          </el-footer>
-        </el-container>
+          </template>
+        </el-main>
+        <el-footer class="footer" height="56px">
+          <div class="footer-left">
+            <el-button v-if="onEdit" @click="onEdit = !onEdit">取消</el-button>
+          </div>
+          <div v-if="onEdit" class="footer-right">
+            <el-button>提交</el-button>
+            <el-button>下载</el-button>
+          </div>
+          <div v-else class="choose-photo">
+            <el-button @click="onEdit = !onEdit">
+              选择照片
+              <i class="el-icon-caret-right"></i>
+            </el-button>
+          </div>
+        </el-footer>
       </el-container>
-    </div>
+    </el-container>
     <!-- 返回顶部 -->
     <el-backtop class="backtop" target=".main" :right="18" :bottom="110" :visibility-height="10">
       <img src="../../assets/images/07_25.png" />
@@ -128,6 +136,7 @@ export default {
     return {
       count: 50,
       page: 0, //  班级列表page
+      onEdit: false, // 编辑状态
       selectEnterYear: '', // 选中的入学年份
       inputTagsSearch: '', // input标签搜索
       classList: [], //  左侧班级列表
@@ -278,20 +287,31 @@ export default {
         }
       })
     },
-    selectTags (id) {
-      this.tagsList.forEach(item => {
-        if (id === item.id) {
-          item.selected = !item.selected
-        }
-      })
+    selectTags (item) {
+      console.log('Tags', item)
+      this.searchValue(item.name)
     },
-    selectUploaders (id) {
-      this.uploadersList.forEach(item => {
-        if (id === item.id) {
-          item.selected = !item.selected
-        }
-      })
+    selectUploaders (item) {
+      console.log('Uploaders', item)
+      this.searchValue(item.name)
     },
+    yearSelect (value) {
+      console.log(value)
+      this.searchValue(value)
+    },
+    monthSelect (value) {
+      console.log(value)
+      this.searchValue(value)
+    },
+    searchValue (value) {
+      this.inputTagsSearch = this.inputTagsSearch.trim()
+      if (!value) { return }
+      if (this.inputTagsSearch.length === 0) {
+        this.inputTagsSearch = value
+      } else {
+        this.inputTagsSearch = this.inputTagsSearch + ' 、' + value
+      }
+    }
   },
   components: { headerVue }
 }
@@ -368,7 +388,8 @@ export default {
 }
 /* 内容头部 */
 .header {
-  position: relative;
+  display: flex;
+  align-items: center;
   padding: 20px 54px;
   border-bottom: 1px solid #e5e5e5;
   background-color: #f8f8f8;
@@ -401,11 +422,17 @@ export default {
 }
 .tags-type {
   width: 90px;
+  min-width: 90px;
   font-weight: bold;
   color: #acacac;
   text-align: justify;
   text-align-last: justify;
   margin-bottom: 10px;
+}
+.tags-row {
+  width: calc(100vw - 543px);
+  height: 22px;
+  overflow: hidden;
 }
 .tags-row span,
 .date-tag {
@@ -419,7 +446,7 @@ export default {
   color: #f8b626;
   cursor: pointer;
 }
-.tags-row span.active {
+.tags-row span:active {
   color: white;
   background-color: #f8b626;
   border: 1px solid #f8b626;
@@ -450,10 +477,7 @@ export default {
   color: #f8b626;
 }
 .addPhotoBtn {
-  position: absolute;
-  right: 120px;
-  top: 40px;
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
@@ -528,10 +552,19 @@ export default {
   padding: 0px 20px;
 }
 .footer /deep/ .el-button:focus,
-.el-button:hover {
+.footer /deep/ .el-button:hover {
+  color: #606266;
+  background: #fff;
+  border-color: 1px solid #dcdfe6;
+}
+.footer /deep/ .el-button:active {
   color: white;
   border-color: #f8b626;
   background-color: #f8b626;
+}
+.choose-photo button {
+  padding: 0px 12px;
+  border-color: #f8b626;
 }
 /* 返回顶部 */
 .backtop {
