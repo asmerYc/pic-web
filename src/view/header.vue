@@ -1,12 +1,12 @@
 <template>
   <div class="header">
     <div class="left">
-      <img class="logo-img" src="../assets/images/logo.png" alt />
+      <img class="logo-img" src="../assets/images/LOGO_03.gif" alt />
       <span class="logo-name">西北工业大学附属小学</span>
       <span class="line">|</span>
       <span class="system-name">照片管理系统</span>
     </div>
-    <div class="right setting" @click="toSet">
+    <div class="right setting" @click="openAdminTable">
       <img class="set-icon" src="../assets/images/设置_03.png" alt />
       <span>管理员设置</span>
     </div>
@@ -20,6 +20,9 @@ export default {
     }
   },
   methods: {
+    openAdminTable () {
+      this.$emit('tableVisibleAdmin', true)
+    },
     toSet () {
     }
   }

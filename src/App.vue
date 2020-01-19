@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="app">
     <div v-if="$route.meta.keepAlive">
       <router-view></router-view>
     </div>
@@ -14,4 +14,7 @@ export default {
 </script>
 
 <style>
+.app {
+  min-width: 740px;
+}
 </style>

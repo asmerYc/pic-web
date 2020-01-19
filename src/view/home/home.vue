@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header-vue></header-vue>
+    <header-vue @tableVisibleAdmin="tableVisibleAdmin"></header-vue>
     <el-container class="home">
       <!-- 左侧边栏 -->
       <el-aside class="aside" width="245px">
@@ -83,7 +83,7 @@
               </div>
             </div>
           </div>
-          <div class="addPhotoBtn">
+          <div class="add-photo-btn" @click="dialogPhoto = true">
             <img src="../../assets/images/添加_06.png" />
             <span>添加照片</span>
           </div>
@@ -98,7 +98,7 @@
                 <div class="photos">
                   <div v-for="(i,index) in count" class="single-photo" :key="index">
                     <span v-if="onEdit" :class="['choose-icon','choosed']"></span>
-                    <img src="../../assets/images/08_02.png" alt />
+                    <img src="../../assets/images/LOGO_03.gif" alt />
                   </div>
                 </div>
               </div>
@@ -126,6 +126,97 @@
     <el-backtop class="backtop" target=".main" :right="18" :bottom="110" :visibility-height="10">
       <img src="../../assets/images/07_25.png" />
     </el-backtop>
+    <!-- 上传图片弹窗 -->
+    <el-dialog title="上传照片" :visible.sync="dialogPhoto" class="dialog-photo">
+      <span slot="title">
+        <span class="upload-title">上传照片</span>
+        <span class="upload-tip">（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span>
+      </span>
+      <el-container>
+        <el-main class="upload-main">
+          <div class="upload-photos">
+            <div v-for="(i,index) in count" class="upload-single-photo" :key="index">
+              <span v-if="onEdit" :class="['choose-icon','choosed']"></span>
+              <img src="../../assets/images/登录页面_03.png" alt />
+            </div>
+          </div>
+        </el-main>
+        <el-footer height="100px" class="upload-footer">
+          <el-button
+            v-if="!startUpload"
+            type="info"
+            class="upload-btn start-upload"
+            @click="startPhoto"
+          >开始上传</el-button>
+          <el-button v-else type="info" class="upload-btn cancle-upload" @click="canclePhoto">取消上传</el-button>
+          <el-input
+            type="textarea"
+            class="add-upload-disc"
+            v-model="addUploadDisc"
+            resize="none"
+            placeholder="为了方便搜索，请按照时间、事件添加照片说明"
+          ></el-input>
+        </el-footer>
+      </el-container>
+    </el-dialog>
+    <!-- 管理员设置弹窗 -->
+    <el-dialog title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
+      <span slot="title">
+        <el-button type="primary" icon="el-icon-plus" class="add-admin">新增</el-button>
+      </span>
+      <el-container>
+        <el-main class="admin-main">
+          <el-table :data="tableData" style="width: 100%" :cell-class-name="cell" height="100%">
+            <el-table-column prop="date" label="部门" width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="name" label="姓名" width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="date" label="职务" width="100" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="name" label="登陆账号" width="182" show-overflow-tooltip></el-table-column>
+            <el-table-column label="密码状态" width="100" class-name="pw-cell-class">
+              <template slot-scope="scope">
+                <span v-if="scope.row.status">已经自设</span>
+                <span v-else>初始密码</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="权限开放" width="100" class-name="role-cell-class">
+              <template slot-scope="scope">
+                <el-radio-group v-model="scope.row.open" size="mini">
+                  <el-radio-button label="y">
+                    <i class="el-icon-check"></i>
+                  </el-radio-button>
+                  <el-radio-button label="n">
+                    <i class="el-icon-close"></i>
+                  </el-radio-button>
+                </el-radio-group>
+              </template>
+            </el-table-column>
+            <el-table-column label="重置密码" width="100" class-name="retpw-cell-class">
+              <template slot-scope="scope">
+                <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">立即重置</el-button>
+              </template>
+            </el-table-column>
+            <el-table-column label width="100">
+              <template slot-scope="scope">
+                <span @click="handleEdit(scope.$index, scope.row)">隐藏</span>
+              </template>
+            </el-table-column>
+            <!-- <el-table-column label="操作">
+              <template slot-scope="scope">
+                <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.$index, scope.row)"
+                >删除</el-button>
+              </template>
+            </el-table-column>-->
+          </el-table>
+        </el-main>
+        <el-footer height="100px" class="admin-footer">
+          <el-button class="cancel-admin">取消</el-button>
+          <el-button type="primary" class="save-admin">保存</el-button>
+        </el-footer>
+      </el-container>
+    </el-dialog>
   </div>
 </template>
 
@@ -134,7 +225,9 @@ import headerVue from '../header'
 export default {
   data () {
     return {
-      count: 50,
+      dialogAdmin: false,
+      dialogPhoto: false,
+      count: 20,
       page: 0, //  班级列表page
       onEdit: false, // 编辑状态
       selectEnterYear: '', // 选中的入学年份
@@ -142,6 +235,25 @@ export default {
       classList: [], //  左侧班级列表
       tagsList: [], // 标签
       uploadersList: [], // 上传人
+      addUploadDisc: '', // 添加照片说明
+      startUpload: false, // 开始上传标志
+      tableData: [{
+        date: '政教处',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '政教处',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1517 弄'
+      }, {
+        date: '政教处',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1519 弄'
+      }, {
+        date: '政教处',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1516 弄'
+      }],
       time: {
         year: '',
         month: ''
@@ -196,6 +308,12 @@ export default {
     this.getData()
   },
   methods: {
+    handleEdit (index, row) {
+      console.log(index, row);
+    },
+    handleDelete (index, row) {
+      console.log(index, row);
+    },
     getData () {
       this.classList = [
         { id: 1, name: '2018级1班' },
@@ -279,6 +397,7 @@ export default {
     load () {
       this.page += 1
     },
+    // 侧边栏入学年份班级选择
     selectClass (id) {
       this.classList.forEach(item => {
         item.selected = false
@@ -287,22 +406,27 @@ export default {
         }
       })
     },
+    // 标签选择
     selectTags (item) {
       console.log('Tags', item)
       this.searchValue(item.name)
     },
+    // 上传人选择
     selectUploaders (item) {
       console.log('Uploaders', item)
       this.searchValue(item.name)
     },
+    // 年份选择
     yearSelect (value) {
       console.log(value)
       this.searchValue(value)
     },
+    // 月份选择
     monthSelect (value) {
       console.log(value)
       this.searchValue(value)
     },
+    // 根据标签填入搜索框的value
     searchValue (value) {
       this.inputTagsSearch = this.inputTagsSearch.trim()
       if (!value) { return }
@@ -311,6 +435,18 @@ export default {
       } else {
         this.inputTagsSearch = this.inputTagsSearch + ' 、' + value
       }
+    },
+    // 打开管理员设置弹窗
+    tableVisibleAdmin (value) {
+      this.dialogAdmin = value
+    },
+    // 开始上传事件
+    startPhoto () {
+      this.startUpload = true
+    },
+    // 取消上传事件
+    canclePhoto () {
+      this.startUpload = false
     }
   },
   components: { headerVue }
@@ -396,6 +532,7 @@ export default {
 }
 .tag-search {
   width: 50%;
+  min-width: 300px;
   margin-bottom: 15px;
 }
 .tag-search /deep/ .el-input__inner {
@@ -430,7 +567,8 @@ export default {
   margin-bottom: 10px;
 }
 .tags-row {
-  width: calc(100vw - 543px);
+  width: calc(100vw - 563px);
+  min-width: 200px;
   height: 22px;
   overflow: hidden;
 }
@@ -476,18 +614,20 @@ export default {
 .tags-row /deep/ .el-select .el-input .el-select__caret {
   color: #f8b626;
 }
-.addPhotoBtn {
+.add-photo-btn {
   display: inline-flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   width: 100px;
+  min-width: 100px;
   height: 100px;
+  margin-left: 20px;
   color: white;
   background-color: #f8b626;
   cursor: pointer;
 }
-.addPhotoBtn img {
+.add-photo-btn img {
   margin-bottom: 5px;
 }
 /* 内容 */
@@ -497,6 +637,7 @@ export default {
 }
 .date-tag {
   margin-bottom: 10px;
+  cursor: default;
 }
 .photographer {
   display: inline-block;
@@ -519,6 +660,15 @@ export default {
   margin-bottom: 10px;
   background-color: #fff;
 }
+.single-photo img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  height: auto;
+  max-width: 100px;
+}
 .single-photo .choose-icon {
   position: absolute;
   width: 18px;
@@ -530,15 +680,6 @@ export default {
 }
 .single-photo .choose-icon.choosed {
   background-image: url("../../assets/images/选择_14.png");
-}
-.single-photo img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  max-width: 100px;
-  height: auto;
 }
 /* 底部按钮 */
 .footer {
@@ -572,5 +713,117 @@ export default {
   width: 45px;
   height: 45px;
   border-radius: 0;
+}
+/* 上传照片模态框 */
+.dialog-photo .upload-title {
+  font-size: 16px;
+  color: #555;
+}
+.dialog-photo .upload-tip {
+  color: #999;
+}
+.dialog-photo .upload-main {
+  width: 100%;
+  height: calc(100% - 142px);
+  padding-right: 0;
+  padding-bottom: 0;
+}
+.dialog-photo .upload-photos {
+  display: flex;
+  flex-wrap: wrap;
+}
+.dialog-photo .upload-single-photo {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid #f1f1f1;
+}
+.dialog-photo .upload-single-photo img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  height: auto;
+  max-width: 180px;
+}
+.dialog-photo .upload-footer {
+  display: flex;
+  width: 100%;
+  padding: 25px 50px;
+  background-color: #f1f1f1;
+}
+.dialog-photo .upload-btn {
+  position: relative;
+  width: 180px;
+  min-width: 180px;
+  height: 50px;
+  margin-right: 20px;
+  font-size: 18px;
+  padding-left: 65px;
+}
+.dialog-photo .start-upload::before {
+  position: absolute;
+  content: "";
+  top: 10px;
+  left: 30px;
+  width: 30px;
+  height: 28px;
+  background-repeat: no-repeat;
+  background-image: url("../../assets/images/111_03.png");
+}
+.dialog-photo .cancle-upload {
+  color: #999;
+  background-color: transparent;
+}
+.dialog-photo .cancle-upload::before {
+  position: absolute;
+  content: "";
+  top: 14px;
+  left: 30px;
+  width: 20px;
+  height: 20px;
+  border-color: #999;
+  background-repeat: no-repeat;
+  background-image: url("../../assets/images/close.png");
+}
+.dialog-photo .add-upload-disc /deep/ .el-textarea__inner {
+  height: 50px;
+}
+/* 管理员设置弹窗 */
+.dialog-admin .add-admin,
+.dialog-admin .save-admin,
+.dialog-admin .cancel-admin {
+  width: 95px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  color: #fff;
+  border-color: #f8b626;
+  background-color: #f8b626;
+}
+.dialog-admin .cancel-admin {
+  color: #f8b626;
+  background-color: #fff;
+}
+.dialog-admin .admin-main {
+  width: 100%;
+  height: calc(100% - 142px);
+  padding: 0px 30px;
+  border-top: 2px solid #e0e0e0;
+}
+.dialog-admin .admin-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 25px 50px;
+  border-top: 2px solid #e0e0e0;
+}
+.dialog-admin .cancel-admin {
+  margin-right: 10px;
 }
 </style>

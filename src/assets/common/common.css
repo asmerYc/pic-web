@@ -48,7 +48,7 @@ dl,
 dt,
 dd {
   margin: 0;
-  padding: 0
+  padding: 0;
 }
 
 img {
@@ -59,4 +59,80 @@ img {
 /* 下拉框的颜色 */
 .el-select-dropdown__item.selected {
   color: #f8b626;
+}
+/* 模态框 */
+.el-dialog {
+  width: 74%;
+  height: 74%;
+  min-width: 600px;
+  max-width: 1420px;
+  min-height: 500px;
+  max-height: 742px;
+  border-radius: 5px;
+}
+.el-dialog__header {
+  border-radius: 5px;
+}
+.el-dialog__body {
+  padding: 0 !important;
+}
+.el-container.is-vertical {
+  height: 100%;
+}
+/* 上传照片模态框 */
+.dialog-photo .el-dialog__header {
+  padding: 10px 30px;
+  background-color: #f1f1f1;
+}
+.dialog-photo .el-dialog__headerbtn {
+  top: 12px;
+}
+.dialog-photo .el-dialog__body {
+  height: calc(100% - 42px);
+}
+/* 管理员设置弹窗 */
+.dialog-admin .el-dialog {
+  width: 74%;
+  height: 74%;
+  min-width: 600px;
+  max-width: 950px;
+  min-height: 500px;
+  max-height: 742px;
+  border-radius: 5px;
+}
+.dialog-admin .el-dialog__header {
+  padding: 10px 20px;
+}
+.dialog-admin .el-dialog__body {
+  height: calc(100% - 52px);
+}
+.dialog-admin .el-radio-button--mini .el-radio-button__inner {
+  font-size: 16px;
+  padding: 5px 10px;
+}
+.dialog-admin .el-table th {
+  padding-right: 20px;
+}
+.dialog-admin .cell {
+  margin-right: 20px;
+  text-align: center;
+  color: #353535;
+}
+.dialog-admin .el-table th > .cell {
+  margin-right: 0px;
+  background-color: #f1f1f1;
+}
+.dialog-admin el-table__row .cell {
+  padding-right: 30px;
+}
+.dialog-admin .el-table__row .pw-cell-class .cell {
+  padding-right: 10px;
+  text-align: center;
+  background-color: #f1f1f1;
+}
+.dialog-admin .el-table__row .role-cell-class .cell {
+  padding: 0px;
+}
+.dialog-admin .el-table__row .retpw-cell-class .cell {
+  padding: 0px;
 }
