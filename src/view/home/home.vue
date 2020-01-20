@@ -135,20 +135,51 @@
       <el-container>
         <el-main class="upload-main">
           <div class="upload-photos">
-            <div v-for="(i,index) in count" class="upload-single-photo" :key="index">
-              <span v-if="onEdit" :class="['choose-icon','choosed']"></span>
-              <img src="../../assets/images/登录页面_03.png" alt />
+            <div v-for="(file,index) in files" class="upload-single-photo" :key="index">
+              <img v-if="file.blob" :src="file.blob" />
+              <span class="extraItem delete-btn" @click="$refs.uploader.remove(file)">
+                <i class="el-icon-delete"></i>
+                <div class="extraItem progress" v-if="file.active || file.progress !== '0.00'">
+                  <span>{{file.progress}}%</span>
+                  <div class="extraItem activeProgress" :style="{width: file.progress + '%'}"></div>
+                </div>
+              </span>
+            </div>
+            <div class="add-photo" v-show="files.length<20">
+              <img src="../../assets/images/add.png" />
+              <file-upload
+                ref="uploader"
+                v-model="files"
+                :multiple="true"
+                :maximum="20"
+                post-action="/post.method"
+                put-action="/put.method"
+                @input-file="inputFile"
+                @input-filter="inputFilter"
+              >添加照片</file-upload>
             </div>
           </div>
         </el-main>
         <el-footer height="100px" class="upload-footer">
           <el-button
+            v-if="!$refs.upload || !$refs.upload.active"
+            type="info"
+            class="upload-btn start-upload"
+            @click="$refs.upload.active = true"
+          >开始上传</el-button>
+          <el-button
+            v-else
+            type="info"
+            class="upload-btn cancle-upload"
+            @click="$refs.upload.active = false"
+          >取消上传</el-button>
+          <!-- <el-button
             v-if="!startUpload"
             type="info"
             class="upload-btn start-upload"
             @click="startPhoto"
           >开始上传</el-button>
-          <el-button v-else type="info" class="upload-btn cancle-upload" @click="canclePhoto">取消上传</el-button>
+          <el-button v-else type="info" class="upload-btn cancle-upload" @click="canclePhoto">取消上传</el-button>-->
           <el-input
             type="textarea"
             class="add-upload-disc"
@@ -166,7 +197,7 @@
       </span>
       <el-container>
         <el-main class="admin-main">
-          <el-table :data="tableData" style="width: 100%" :cell-class-name="cell" height="100%">
+          <el-table :data="tableData" style="width: 100%" height="100%">
             <el-table-column prop="date" label="部门" width="100" show-overflow-tooltip></el-table-column>
             <el-table-column prop="name" label="姓名" width="100" show-overflow-tooltip></el-table-column>
             <el-table-column prop="date" label="职务" width="100" show-overflow-tooltip></el-table-column>
@@ -223,10 +254,12 @@
 <script>
 import headerVue from '../header'
 import {queryMark} from '../../request/api'
+import fileUpload from 'vue-upload-component'
 export default {
   data () {
     return {
-      cell:"",
+      cell: '',
+      files: [],
       dialogAdmin: false,
       dialogPhoto: false,
       count: 20,
@@ -306,16 +339,56 @@ export default {
       ]
     }
   },
+  components: { headerVue, fileUpload },
   created () {
     this.getData()
     this.getMarkList()
   },
   methods: {
     handleEdit (index, row) {
-      console.log(index, row);
+      console.log(index, row)
     },
     handleDelete (index, row) {
-      console.log(index, row);
+      console.log(index, row)
+    },
+    /**
+     * Has changed
+     * @param  Object|undefined   newFile   只读
+     * @param  Object|undefined   oldFile   只读
+     * @return undefined
+     */
+    inputFile: function (newFile, oldFile) {
+      if (newFile && oldFile && !newFile.active && oldFile.active) {
+        // 获得相应数据
+        console.log('response', newFile.response)
+        if (newFile.xhr) {
+          //  获得响应状态码
+          console.log('status', newFile.xhr.status)
+        }
+      }
+    },
+    /**
+     * Pretreatment
+     * @param  Object|undefined   newFile   读写
+     * @param  Object|undefined   oldFile   只读
+     * @param  Function           prevent   阻止回调
+     * @return undefined
+     */
+    inputFilter: function (newFile, oldFile, prevent) {
+      if (newFile && !oldFile) {
+        // 过滤不是图片后缀的文件
+        if (!/\.(jpeg|jpe|jpg|gif|png|webp)$/i.test(newFile.name)) {
+          return prevent()
+        }
+      }
+      // 创建 blob 字段 用于图片预览
+      if (newFile) {
+        newFile.blob = ''
+        let URL = window.URL || window.webkitURL
+        if (URL && URL.createObjectURL) {
+          newFile.blob = URL.createObjectURL(newFile.file)
+        }
+      }
     },
     getMarkList () {
       queryMark(null).then(res => {
@@ -445,7 +518,7 @@ export default {
       }
     },
     // 打开管理员设置弹窗
-    tableVisibleAdmin (value) {      
+    tableVisibleAdmin (value) {
       this.dialogAdmin = value
     },
     // 开始上传事件
@@ -456,8 +529,7 @@ export default {
     canclePhoto () {
       this.startUpload = false
     }
-  },
-  components: { headerVue }
+  }
 }
 </script>
 
@@ -749,6 +821,32 @@ export default {
   background-color: #fff;
   border: 1px solid #f1f1f1;
 }
+.dialog-photo .upload-single-photo .extraItem {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 68px;
+  left: 0;
+  width: 100%;
+  height: 44px;
+  color: white;
+  font-size: 24px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.dialog-photo .upload-single-photo .delete-btn {
+  cursor: pointer;
+}
+.dialog-photo .upload-single-photo .progress {
+  z-index: 1;
+}
+.dialog-photo .upload-single-photo .activeProgress {
+  background-color: #f8b626;
+  z-index: 2;
+}
+.dialog-photo .upload-single-photo:hover .delete-btn {
+  display: flex;
+}
 .dialog-photo .upload-single-photo img {
   position: absolute;
   top: 50%;
@@ -800,6 +898,28 @@ export default {
 }
 .dialog-photo .add-upload-disc /deep/ .el-textarea__inner {
   height: 50px;
+}
+.dialog-photo .add-photo {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 180px;
+  height: 180px;
+  background-color: #e8e8e8;
+  border: 1px solid #f1f1f1;
+}
+.dialog-photo .add-photo img {
+  position: relative;
+  top: -10px;
+}
+.dialog-photo .file-uploads {
+  position: absolute;
+  top: 0;
+  height: 180px;
+  width: 180px;
+  padding-top: 125px;
+  color: #b8b8b8;
 }
 /* 管理员设置弹窗 */
 .dialog-admin .add-admin,

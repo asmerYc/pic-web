@@ -1,17 +1,18 @@
+/* eslint-disable handle-callback-err */
 <template>
   <div class="container">
     <div class="header">
       <el-row type="flex" class="row-bg" justify="end">
         <el-col :span="18">
           <div class="info">
-              <img class="logo" src="../assets/images/LOGO_03.gif" alt />
-              <div class="title">
-                <div class="left">鹿久久</div>
-                <div class="right">
-                  <div class="top">照片管理系统</div>
-                  <div class="bottom">Photo management system</div>
-                </div>
+            <img class="logo" src="../assets/images/LOGO_03.gif" alt />
+            <div class="title">
+              <div class="left">鹿久久</div>
+              <div class="right">
+                <div class="top">照片管理系统</div>
+                <div class="bottom">Photo management system</div>
               </div>
+            </div>
           </div>
         </el-col>
       </el-row>
@@ -22,16 +23,18 @@
           <div class="loginfo_top">登陆账号</div>
           <div class="loginfo_bottom">ACCOUNT NUMBER</div>
         </div>
+        <el-input @blur="onblur" size="medium" placeholder="用户" v-model="userName"></el-input>
         <el-input
-          @blur="onblur"
-          size="medium"
-          placeholder="用户"
-          v-model="userName"
-          >
-      </el-input>
-      <el-input placeholder="请输入密码" v-model="passWord" @keyup.enter.native="toLogin" type="password"></el-input>
-      <div class="operatepsd" v-bind:class="[isNewUser ? 'psdHighLight' : 'psdCommon']">{{isNewUser ? '设置密码' : '重置密码'}}</div>
-      <el-button  type="warning" @click="toLogin">登录</el-button>
+          placeholder="请输入密码"
+          v-model="passWord"
+          @keyup.enter.native="toLogin"
+          type="password"
+        ></el-input>
+        <div
+          class="operatepsd"
+          v-bind:class="[isNewUser ? 'psdHighLight' : 'psdCommon']"
+        >{{isNewUser ? '设置密码' : '重置密码'}}</div>
+        <el-button type="warning" @click="toLogin">登录</el-button>
       </div>
     </div>
     <div class="footer">
@@ -43,7 +46,7 @@
 </template>
 
 <script>
-import {apiAddress, queryUser} from '../request/api'
+import { apiAddress, queryUser } from '../request/api'
 import { mapMutations } from 'vuex';
 export default {
   data () {
@@ -51,70 +54,70 @@ export default {
       msg: 'Welcome',
       userName: '',
       passWord: '',
-      isNewUser:false,
+      isNewUser: false
     }
   },
-  created() {
+  created () {
     this.keyupSubmit()
   },
   methods: {
     ...mapMutations(['changeLogin']),
     toLogin () {
-      if(this.userName === "" || this.passWord === "") {
+      if (this.userName === '' || this.passWord === '') {
         this.$message({
-            message:"账号或者密码不能为空!",
-            type: 'warning'
+          message: '账号或者密码不能为空!',
+          type: 'warning'
         })
-        return;
+        return
       }
       const body = {
-        account:this.userName,
-        password:this.passWord
+        account: this.userName,
+        password: this.passWord
       }
       apiAddress(body).then(res => {
-        if(res) {
+        if (res) {
           this.$message({
-            message:"登录成功!",
+            message: '登录成功!',
             type: 'success'
-        })
+          })
           const user = {
             Authorization: res.token,
-            is_manager: res.is_manager,
+            is_manager: res.is_manager
 
           }
           this.changeLogin(user);
           this.$router.push({ path: 'home' })
         }
+        // eslint-disable-next-line handle-callback-err
       }).catch(error => {
         this.$message({
-          message:"请确认密码是否正确!",
+          message: '请确认密码是否正确!',
           type: 'warning'
         })
       })
-  
+
     },
-    //用户栏失去焦点事件,查询一下用户是新用户还是老用户
+    // 用户栏失去焦点事件,查询一下用户是新用户还是老用户
 
     onblur () {
       // 在这去调用查询用户是否存在的接口
       if (this.userName) {
-        queryUser(this.userName).then (res => {
+        queryUser(this.userName).then(res => {
           this.isNewUser = res && res.password_status === 0 ? true : false
-          if(res && res.code === 0) {
+          if (res && res.code === 0) {
             this.$message({
-              message:`${res.msg},请确认账号是否正确!`,
+              message: `${res.msg},请确认账号是否正确!`,
               type: 'error'
-           })
-           return;
+            })
+
           }
         }).catch(error => {
           console.log(error)
-      })
+        })
       }
-      
     },
-    //登录时候的回车登录事件
-    keyupSubmit() {
+    // 登录时候的回车登录事件
+    keyupSubmit () {
 
     }
 
@@ -124,11 +127,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 /* ul {
       list-style:none;
@@ -144,7 +147,6 @@ export default {
   height: 130px;
   font-family: MicrosoftYahei;
   color: #f8b62b;
-  
 }
 .header .info .logo {
   height: 88px;
@@ -155,7 +157,7 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-    height: 130px;
+  height: 130px;
 }
 .header .info .title {
   display: flex;
@@ -177,8 +179,7 @@ export default {
 .main {
   position: relative;
   height: 500px;
-  background:url('../assets/images/08_02.png') no-repeat;
-
+  background: url("../assets/images/08_02.png") no-repeat;
 }
 .main .logarea {
   text-align: center;
@@ -192,7 +193,7 @@ export default {
 
 .main .logarea::before {
   position: absolute;
-  left:-28px;
+  left: -28px;
   content: " ";
   display: block;
   height: 28px;
@@ -223,7 +224,7 @@ export default {
   padding-right: 18px;
 }
 .psdCommon {
-   color: #b8b8b8;
+  color: #b8b8b8;
 }
 .psdHighLight {
   color: lightblue;
@@ -241,12 +242,12 @@ export default {
   font-size: 12px;
 }
 .footer .top {
-  margin-bottom:10px;
+  margin-bottom: 10px;
 }
 .footer .middle {
-  margin-bottom:10px;
+  margin-bottom: 10px;
 }
 .footer .bot {
-  margin-bottom:10px;
+  margin-bottom: 10px;
 }
 </style>
