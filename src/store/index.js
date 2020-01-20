@@ -8,6 +8,7 @@ const store = new Vuex.Store({
     // 存储token
     Authorization: localStorage.getItem('Authorization') ? localStorage.getItem('Authorization') : '',
     is_manager:false,
+    account:"",
   },
  
   mutations: {
@@ -16,6 +17,10 @@ const store = new Vuex.Store({
       state.Authorization = user.Authorization;
       state.is_manager = user.is_manager;
       localStorage.setItem('Authorization', user.Authorization);
+    },
+    //存储用户名
+    saveUser(state,userName) {
+      state.account = userName;
     }
   }
 });

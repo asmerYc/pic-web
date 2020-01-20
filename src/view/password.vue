@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="header">
+    <!-- <div class="header">
       <el-row type="flex" class="row-bg" justify="end">
         <el-col :span="18">
           <div class="info">
@@ -15,12 +15,15 @@
           </div>
         </el-col>
       </el-row>
-    </div>
+    </div> -->
     <div class="main">
       <div class="logarea">
         <div>
-          <div class="loginfo_top">登陆账号</div>
-          <div class="loginfo_bottom">ACCOUNT NUMBER</div>
+          <div class="loginfo_top">
+            <span class="left">登录账户</span>
+            <span class="right">{{account}}</span>
+          </div>
+
         </div>
         <el-input
           @blur="onblur"
@@ -31,22 +34,24 @@
           >
       </el-input>
       <el-input placeholder="请输入密码" v-model="passWord" @keyup.enter.native="toLogin" type="password"></el-input>
-      <el-link class="operatepsd" @click="operatePsd" :underline="false" v-bind:class="[isNewUser ? 'psdHighLight' : 'psdHighLight']" :disabled="isDisabled">{{isNewUser ? '设置密码' : '重置密码'}}</el-link>
-      <el-button  type="warning" @click="toLogin">登录</el-button>
+    
+      <el-button  type="warning" @click="toLogin">确定</el-button>
       </div>
     </div>
     <div class="footer">
-      <div class="top">鹿久久 | 关于我们 | 咨询服务 | 广告招商</div>
-      <div class="middle">客服热线 ： 88888888 周一至周日 09:00-18:00 2018 ©️ 图领领网络科技有限公司 陕ICP备 88888888</div>
-      <div class="bot">图领领网络科技提供技术支持</div>
+      <div class="top">©️2018 lu99.xadmin.029tulingling.com 版权所有</div>
+
     </div>
   </div>
 </template>
 
 <script>
 import {apiAddress, queryUser} from '../request/api'
-import { mapMutations } from 'vuex';
+import { mapMutations, mapState } from 'vuex';
 export default {
+  computed:{
+    ...mapState(['account']),
+  },
   data () {
     return {
       msg: 'Welcome',
@@ -60,7 +65,7 @@ export default {
     // this.keyupSubmit()
   },
   methods: {
-    ...mapMutations(['changeLogin','saveUser']),
+    ...mapMutations(['changeLogin']),
     toLogin () {
       if(this.userName === "" || this.passWord === "") {
         this.$message({
@@ -110,7 +115,6 @@ export default {
            })
            return;
           }
-          this.saveUser(this.userName);
           this.isDisabled = false;
         }).catch(error => {
           console.log(error)
@@ -121,11 +125,6 @@ export default {
     //监听用户输入框的值
     watchInput (value) {
       if(!value) this.isDisabled = true;
-    },
-
-    //重置或者设置密码按钮事件
-    operatePsd() {
-      this.$router.push({ path: 'password' })
     }
 
   }
@@ -135,6 +134,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   height: 100vh;
   font-family: MicrosoftYahei;
   background-color: #f1f1f1;
@@ -142,6 +144,7 @@ export default {
 .header {
   height: 130px;
   font-family: MicrosoftYahei;
+  background-color: #fff;
   color: #f8b62b;
   
 }
@@ -154,7 +157,7 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-    height: 130px;
+  height: 130px;
 }
 .header .info .title {
   display: flex;
@@ -174,31 +177,21 @@ export default {
   font-size: 13px;
 }
 .main {
-  position: relative;
-  height: 500px;
-  background:url('../assets/images/08_02.png') no-repeat;
-
+  display: flex;
+  width: 100%;
+  flex:1;
+  background-color: #f1f1f1;
+  justify-content:center;
+  align-items: center;
+  
 }
 .main .logarea {
   text-align: center;
-  position: absolute;
-  background-color: #fff;
-  height: 528px;
-  width: 330px;
-  right: 180px;
-  bottom: 0;
+  border:1px solid #acacac;
+  height: 460px;
+  width: 778px;
 }
 
-.main .logarea::before {
-  position: absolute;
-  left:-28px;
-  content: " ";
-  display: block;
-  height: 28px;
-  width: 28px;
-  background: url("../assets/images/登录页面_03.png") no-repeat;
-  background-size: 100%;
-}
 
 .logarea >>> input.el-input__inner {
   width: 294px;
@@ -207,8 +200,14 @@ export default {
 }
 .loginfo_top {
   margin-top: 72px;
-  font-size: 32px;
-  color: #353535;
+  margin-bottom:15px;
+  font-size: 14px;
+  color:#555;
+  text-align: left;
+}
+.loginfo_top .left {
+
+  margin-left:10px;
 }
 .loginfo_bottom {
   margin-bottom: 42px;
@@ -230,22 +229,5 @@ export default {
 .logarea >>> .el-button {
   width: 294px;
   height: 46px;
-}
-.footer {
-  flex-grow: 1;
-  overflow: auto;
-  margin-top: 22px;
-  text-align: center;
-  color: #646464;
-  font-size: 12px;
-}
-.footer .top {
-  margin-bottom:10px;
-}
-.footer .middle {
-  margin-bottom:10px;
-}
-.footer .bot {
-  margin-bottom:10px;
 }
 </style>
