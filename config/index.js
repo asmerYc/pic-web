@@ -10,7 +10,16 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+      '/apis':{
+        target:'https://lu99.api.029tulingling.com',
+        secure:false,//如果是https请求的话需要配置这个参数
+        changeOrigin:true,
+        pathRewrite: {
+          '^/apis':''
+        }
+      }
+    },
 
     // Various Dev Server settings
     // host: '192.168.1.167', // can be overwritten by process.env.HOST

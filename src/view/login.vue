@@ -4,10 +4,7 @@
       <el-row type="flex" class="row-bg" justify="end">
         <el-col :span="18">
           <div class="info">
-            <div>
-              <img class="logo" src="../assets/images/10_03.png" alt />
-            </div>
-            <div>
+              <img class="logo" src="../assets/images/LOGO_03.gif" alt />
               <div class="title">
                 <div class="left">鹿久久</div>
                 <div class="right">
@@ -15,7 +12,6 @@
                   <div class="bottom">Photo management system</div>
                 </div>
               </div>
-            </div>
           </div>
         </el-col>
       </el-row>
@@ -26,10 +22,16 @@
           <div class="loginfo_top">登陆账号</div>
           <div class="loginfo_bottom">ACCOUNT NUMBER</div>
         </div>
-        <el-input @blur="onblur" size="medium" placeholder="用户" v-model="input"></el-input>
-        <el-input placeholder="请输入密码" v-model="input"></el-input>
-        <div class="operatepsd">重置密码</div>
-        <el-button type="warning" @click="toLogin">登录</el-button>
+        <el-input
+          @blur="onblur"
+          size="medium"
+          placeholder="用户"
+          v-model="userName"
+          >
+      </el-input>
+      <el-input placeholder="请输入密码" v-model="passWord"></el-input>
+      <div class="operatepsd" v-bind:class="[isNewUser ? 'psdHighLight' : 'psdCommon']">重置密码</div>
+      <el-button  type="warning" @click="toLogin">登录</el-button>
       </div>
     </div>
     <div class="footer">
@@ -41,20 +43,48 @@
 </template>
 
 <script>
+import {apiAddress} from '../request/api'
 export default {
   data () {
     return {
       msg: 'Welcome',
-      input: ''
+      userName: '',
+      passWord: '',
+      isNewUser:false,
     }
   },
   methods: {
     toLogin () {
-      this.$router.push({ path: 'home' })
+      const body = {
+        account:this.userName,
+        password:this.passWord
+      }
+      apiAddress(body).then(res => {
+          this.$message({
+          message:"登录成功!",
+          type: 'success'
+        })
+        console.log(res)
+         this.$router.push({ path: 'home' })
+      }).catch(error => {
+        this.$message({
+          message:"当前用户不存在,请点击修改密码进行注册!",
+          type: 'warning'
+        })
+      })
+      console.log(this.login);
+      // 在这里写调用接口的逻辑,成功;入库,页面跳转
+  
     },
     onblur () {
       // 在这去调用查询用户是否存在的接口
-      alert('122')
+      this.isNewUser = this.userName ? true : false
+      if (this.userName !== 'zhangsan') {
+  
+      } else {
+
+      }
+      
     }
   }
 }
@@ -62,11 +92,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-/* *{
+  *{
       margin:0;
       padding:0;
       box-sizing:border-box;
-  } */
+  }
 
 /* ul {
       list-style:none;
@@ -82,6 +112,7 @@ export default {
   height: 130px;
   font-family: MicrosoftYahei;
   color: #f8b62b;
+  
 }
 .header .info .logo {
   height: 88px;
@@ -92,6 +123,7 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
+    height: 130px;
 }
 .header .info .title {
   display: flex;
@@ -108,12 +140,13 @@ export default {
   font-size: 28px;
 }
 .right .bottom {
-  font-size: 12px;
+  font-size: 13px;
 }
 .main {
   position: relative;
   height: 500px;
-  background: url("../assets/images/08_02.png");
+  background:url('../assets/images/08_02.png') no-repeat;
+
 }
 .main .logarea {
   text-align: center;
@@ -127,12 +160,12 @@ export default {
 
 .main .logarea::before {
   position: absolute;
-  left: -28px;
+  left:-28px;
   content: " ";
   display: block;
   height: 28px;
   width: 28px;
-  background: url("../assets/images/09_03.png") no-repeat;
+  background: url("../assets/images/登录页面_03.png") no-repeat;
   background-size: 100%;
 }
 
@@ -156,7 +189,12 @@ export default {
   margin: 6px 0 30px;
   text-align: end;
   padding-right: 18px;
-  color: #b8b8b8;
+}
+.psdCommon {
+   color: #b8b8b8;
+}
+.psdHighLight {
+  color: lightblue;
 }
 .logarea >>> .el-button {
   width: 294px;
@@ -171,9 +209,12 @@ export default {
   font-size: 12px;
 }
 .footer .top {
+  margin-bottom:10px;
 }
 .footer .middle {
+  margin-bottom:10px;
 }
 .footer .bot {
+  margin-bottom:10px;
 }
 </style>
