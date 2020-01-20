@@ -1,132 +1,123 @@
 <template>
   <div class="container">
-    <!-- <div class="header">
+    <div class="header">
       <el-row type="flex" class="row-bg" justify="end">
         <el-col :span="18">
           <div class="info">
-              <img class="logo" src="../assets/images/LOGO_03.gif" alt />
-              <div class="title">
-                <div class="left">鹿久久</div>
-                <div class="right">
-                  <div class="top">照片管理系统</div>
-                  <div class="bottom">Photo management system</div>
-                </div>
+            <img class="logo" src="../assets/images/LOGO_03.gif" alt />
+            <div class="title">
+              <div class="left">鹿久久</div>
+              <div class="right">
+                <div class="top">照片管理系统</div>
+                <div class="bottom">Photo management system</div>
               </div>
+            </div>
           </div>
         </el-col>
       </el-row>
-    </div> -->
+    </div>
     <div class="main">
       <div class="logarea">
-        <div>
-          <div class="loginfo_top">
-            <span class="left">登录账户</span>
-            <span class="right">{{account}}</span>
-          </div>
-
-        </div>
-        <el-input
-          @blur="onblur"
-          @input="watchInput"
-          size="medium"
-          placeholder="用户"
-          v-model="userName"
-          >
-      </el-input>
-      <el-input placeholder="请输入密码" v-model="passWord" @keyup.enter.native="toLogin" type="password"></el-input>
-    
-      <el-button  type="warning" @click="toLogin">确定</el-button>
+        <el-form
+          :model="ruleForm"
+          status-icon
+          :rules="rules"
+          ref="ruleForm"
+          label-width="100px"
+          class="demo-ruleForm"
+        >
+          <el-form-item label="登录账户">
+            <span class="user-name">{{account}}</span>
+          </el-form-item>
+          <el-form-item label="请输入新密码" prop="pass">
+            <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="请重复新密码" prop="checkPass">
+            <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="sure-btn" type="warning" @click="submitForm('ruleForm')">确定</el-button>
+          </el-form-item>
+        </el-form>
       </div>
     </div>
     <div class="footer">
       <div class="top">©️2018 lu99.xadmin.029tulingling.com 版权所有</div>
-
     </div>
   </div>
 </template>
 
 <script>
-import {apiAddress, queryUser} from '../request/api'
-import { mapMutations, mapState } from 'vuex';
+import { resetPsd } from '../request/api'
+import { mapMutations, mapState, mapGetters } from 'vuex';
+
 export default {
-  computed:{
+  computed: {
     ...mapState(['account']),
+    ...mapGetters(['getAccount'])
   },
   data () {
+    var validatePass = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入密码'));
+      } else {
+        if (this.ruleForm.checkPass !== '') {
+          this.$refs.ruleForm.validateField('checkPass');
+        }
+        callback();
+      }
+    };
+    var validatePass2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'));
+      } else if (value !== this.ruleForm.pass) {
+        callback(new Error('两次输入密码不一致!'));
+      } else {
+        callback();
+      }
+    };
     return {
       msg: 'Welcome',
       userName: '',
       passWord: '',
-      isNewUser:false,
-      isDisabled:true,
+      isNewUser: false,
+      isDisabled: true,
+      ruleForm: {
+        pass: '',
+        checkPass: '',
+      },
+      rules: {
+        pass: [
+          { validator: validatePass, trigger: 'blur' }
+        ],
+        checkPass: [
+          { validator: validatePass2, trigger: 'blur' }
+        ],
+      }
     }
   },
-  created() {
+  created () {
     // this.keyupSubmit()
   },
   methods: {
-    ...mapMutations(['changeLogin']),
-    toLogin () {
-      if(this.userName === "" || this.passWord === "") {
-        this.$message({
-            message:"账号或者密码不能为空!",
-            type: 'warning'
-        })
-        return;
-      }
-      const body = {
-        account:this.userName,
-        password:this.passWord
-      }
-      apiAddress(body).then(res => {
-        if(res) {
-          this.$message({
-            message:"登录成功!",
-            type: 'success'
-        })
-          const user = {
-            Authorization: res.token,
-            is_manager: res.is_manager,
-
-          }
-          this.changeLogin(user);
-          this.$router.push({ path: 'home' })
+    // ...mapMutations(['account']),
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        const body = {
+          account: this.getAccount,
+          password: this.ruleForm.pass,
+          new_pwd: this.ruleForm.checkPass,
         }
-      }).catch(error => {
-        this.$message({
-          message:"请确认密码是否正确!",
-          type: 'warning'
-        })
-      })
-  
+        if (valid) {
+          resetPsd(body).then(res => {
+            console.log(res);
+          })
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
     },
-    //用户栏失去焦点事件,查询一下用户是新用户还是老用户
-
-    onblur () {
-      // 在这去调用查询用户是否存在的接口
-      if (this.userName) {
-        queryUser(this.userName).then (res => {
-          this.isNewUser = res && res.password_status === 0 ? true : false
-          if(res && res.code === 0) {
-            this.isDisabled = true;
-            this.$message({
-              message:`${res.msg},请确认账号是否正确!`,
-              type: 'error'
-           })
-           return;
-          }
-          this.isDisabled = false;
-        }).catch(error => {
-          console.log(error)
-      })
-      }
-      
-    },
-    //监听用户输入框的值
-    watchInput (value) {
-      if(!value) this.isDisabled = true;
-    }
-
   }
 }
 </script>
@@ -146,7 +137,6 @@ export default {
   font-family: MicrosoftYahei;
   background-color: #fff;
   color: #f8b62b;
-  
 }
 .header .info .logo {
   height: 88px;
@@ -179,55 +169,63 @@ export default {
 .main {
   display: flex;
   width: 100%;
-  flex:1;
+  flex: 1;
   background-color: #f1f1f1;
-  justify-content:center;
+  justify-content: center;
   align-items: center;
-  
 }
 .main .logarea {
-  text-align: center;
-  border:1px solid #acacac;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 460px;
   width: 778px;
+  background-color: white;
+  border: 1px solid #acacac;
+  border-radius: 5px;
 }
-
 
 .logarea >>> input.el-input__inner {
-  width: 294px;
-  height: 46px;
+  width: 220px;
+  height: 30px;
   margin-bottom: 24px;
 }
-.loginfo_top {
-  margin-top: 72px;
-  margin-bottom:15px;
-  font-size: 14px;
-  color:#555;
-  text-align: left;
+.logarea .el-button {
+  width: 120px;
+  height: 30px;
+  padding: 0px;
 }
-.loginfo_top .left {
-
-  margin-left:10px;
+.logarea .user-name {
+  display: inline-block;
+  margin-bottom: 14px;
+  width: 220px;
+  height: 30px;
 }
-.loginfo_bottom {
-  margin-bottom: 42px;
-  margin-top: 10px;
+.logarea /deep/ .el-input__suffix {
+  top: -8px;
+  right: -34px;
   font-size: 20px;
-  color: #323232;
 }
-.operatepsd {
-  position: relative;
-  right: -115px;
-  top: -12px;
+.logarea /deep/ .el-icon-circle-check {
+  color: #f8b62b;
 }
-.psdCommon {
-   color: #b8b8b8;
+.logarea /deep/ .el-icon-circle-check:before {
+  content: "\e79c";
 }
-.psdHighLight {
-  color: #0076CE;
+.logarea /deep/ .el-icon-circle-close:before {
+  content: "\e79d";
 }
-.logarea >>> .el-button {
-  width: 294px;
-  height: 46px;
+.logarea /deep/ .el-form-item__error {
+  top: 80%;
+  font-weight: 700;
+}
+.logarea /deep/ .el-form-item__content {
+  margin-left: 110px !important;
+}
+.logarea /deep/ .el-form-item {
+  margin-bottom: 6px;
+}
+.sure-btn {
+  margin-top: 24px;
 }
 </style>
