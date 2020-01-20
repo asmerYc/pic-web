@@ -1,6 +1,6 @@
 import axios from 'axios'
 import QS from  'qs' //引入qs模块,用来序列化post类型的数据
-// import store from '@/store/index';
+import store from '../store/index';
 
 //环境的切换
 
@@ -22,16 +22,22 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 
 // 请求拦截器
 axios.interceptors.request.use(    
-  config => {        
+  config => { 
+    console.log(this)
+    console.log(store)
+    // var token = response.headers.authorization; 
     // 每次发送请求之前判断vuex中是否存在token        
     // 如果存在，则统一在http请求的header都加上token，这样后台根据token判断你的登录情况
     // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断 
-    // const token = store.state.token;        
-    // token && (config.headers.Authorization = token);        
+    const token = store.state.token;        
+    token && (config.headers.Authorization = token);        
+    // if (localStorage.getItem('Authorization')) {
+    //   config.headers.Authorization = localStorage.getItem('Authorization');
+    // }
     return config;    
 },    
-error => {        
-    return Promise.error(error);    
+error => {       
+    return Promise.reject(error);    
 })
 
 // 响应拦截器
@@ -71,7 +77,7 @@ axios.interceptors.response.use(
               case 403:
                    Toast({
                       message: '登录过期，请重新登录',
-                      duration: 1000,
+                      duration: 7000,
                       forbidClick: true
                   });
                   // 清除token

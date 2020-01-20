@@ -1,4 +1,7 @@
 import {get,post} from './http'
-
-// export const apiAddress = p =>get('/api/system/module/queryParent',p)
+//登录前查询新老用户
+export const queryUser = p =>get('/api/v1/admin/is_newadmin',p)
+//登录接口
 export const apiAddress = p =>post('/api/v1/admin/app',p)
+//查询标签
+export const queryMark = p =>get('/api/v1/management/get_label?size=13&page=1',p)

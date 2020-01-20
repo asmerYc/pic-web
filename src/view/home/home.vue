@@ -222,9 +222,11 @@
 
 <script>
 import headerVue from '../header'
+import {queryMark} from '../../request/api'
 export default {
   data () {
     return {
+      cell:"",
       dialogAdmin: false,
       dialogPhoto: false,
       count: 20,
@@ -306,6 +308,7 @@ export default {
   },
   created () {
     this.getData()
+    this.getMarkList()
   },
   methods: {
     handleEdit (index, row) {
@@ -313,6 +316,11 @@ export default {
     },
     handleDelete (index, row) {
       console.log(index, row);
+    },
+    getMarkList () {
+      queryMark(null).then(res => {
+        console.log(res)
+      })
     },
     getData () {
       this.classList = [
@@ -437,7 +445,7 @@ export default {
       }
     },
     // 打开管理员设置弹窗
-    tableVisibleAdmin (value) {
+    tableVisibleAdmin (value) {      
       this.dialogAdmin = value
     },
     // 开始上传事件

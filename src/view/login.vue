@@ -29,8 +29,8 @@
           v-model="userName"
           >
       </el-input>
-      <el-input placeholder="请输入密码" v-model="passWord"></el-input>
-      <div class="operatepsd" v-bind:class="[isNewUser ? 'psdHighLight' : 'psdCommon']">重置密码</div>
+      <el-input placeholder="请输入密码" v-model="passWord" @keyup.enter.native="toLogin" type="password"></el-input>
+      <div class="operatepsd" v-bind:class="[isNewUser ? 'psdHighLight' : 'psdCommon']">{{isNewUser ? '设置密码' : '重置密码'}}</div>
       <el-button  type="warning" @click="toLogin">登录</el-button>
       </div>
     </div>
@@ -43,7 +43,8 @@
 </template>
 
 <script>
-import {apiAddress} from '../request/api'
+import {apiAddress, queryUser} from '../request/api'
+import { mapMutations } from 'vuex';
 export default {
   data () {
     return {
@@ -53,39 +54,70 @@ export default {
       isNewUser:false,
     }
   },
+  created() {
+    this.keyupSubmit()
+  },
   methods: {
+    ...mapMutations(['changeLogin']),
     toLogin () {
+      if(this.userName === "" || this.passWord === "") {
+        this.$message({
+            message:"账号或者密码不能为空!",
+            type: 'warning'
+        })
+        return;
+      }
       const body = {
         account:this.userName,
         password:this.passWord
       }
       apiAddress(body).then(res => {
+        if(res) {
           this.$message({
-          message:"登录成功!",
-          type: 'success'
+            message:"登录成功!",
+            type: 'success'
         })
-        console.log(res)
-         this.$router.push({ path: 'home' })
+          const user = {
+            Authorization: res.token,
+            is_manager: res.is_manager,
+
+          }
+          this.changeLogin(user);
+          this.$router.push({ path: 'home' })
+        }
       }).catch(error => {
         this.$message({
-          message:"当前用户不存在,请点击修改密码进行注册!",
+          message:"请确认密码是否正确!",
           type: 'warning'
         })
       })
-      console.log(this.login);
-      // 在这里写调用接口的逻辑,成功;入库,页面跳转
   
     },
+    //用户栏失去焦点事件,查询一下用户是新用户还是老用户
+
     onblur () {
       // 在这去调用查询用户是否存在的接口
-      this.isNewUser = this.userName ? true : false
-      if (this.userName !== 'zhangsan') {
-  
-      } else {
-
+      if (this.userName) {
+        queryUser(this.userName).then (res => {
+          this.isNewUser = res && res.password_status === 0 ? true : false
+          if(res && res.code === 0) {
+            this.$message({
+              message:`${res.msg},请确认账号是否正确!`,
+              type: 'error'
+           })
+           return;
+          }
+        }).catch(error => {
+          console.log(error)
+      })
       }
       
+    },
+    //登录时候的回车登录事件
+    keyupSubmit() {
+
     }
+
   }
 }
 </script>
