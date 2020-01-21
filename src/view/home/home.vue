@@ -137,14 +137,17 @@
           <div class="upload-photos">
             <div v-for="(file,index) in files" class="upload-single-photo" :key="index">
               <img v-if="file.blob" :src="file.blob" />
+              <!-- 点击开始上传  显示进度条-->
               <div v-if="file.active || file.progress !== '0.00'" class="extraItem progress">
                 <span class="extraItem progressText">{{file.progress || 0}}%</span>
                 <div class="extraItem activeProgress" :style="{width: file.progress + '%'}"></div>
               </div>
+              <!-- 非上传时显示删除按钮 -->
               <span v-else class="extraItem delete-btn" @click="$refs.uploader.remove(file)">
                 <i class="el-icon-delete"></i>
               </span>
             </div>
+            <!-- 当选择多于20张时不显示添加照片按钮 -->
             <div class="add-photo" v-show="files.length<20">
               <img src="../../assets/images/add.png" />
               <file-upload
@@ -192,18 +195,36 @@
     <!-- 管理员设置弹窗 -->
     <el-dialog title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
       <span slot="title">
-        <el-button type="primary" icon="el-icon-plus" class="add-admin">新增</el-button>
+        <el-button type="primary" icon="el-icon-plus" class="add-admin" @click="addRole">新增</el-button>
       </span>
       <el-container>
         <el-main class="admin-main">
           <el-table :data="tableData" style="width: 100%" height="100%">
-            <el-table-column prop="date" label="部门" width="100" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="name" label="姓名" width="100" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="date" label="职务" width="100" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="name" label="登陆账号" width="182" show-overflow-tooltip></el-table-column>
+            <!-- 部门 -->
+            <el-table-column label="部门" width="100" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.dept" placeholder="部门"></el-input>
+                <span v-else>{{scope.row.dept}}</span>
+              </template>
+            </el-table-column>
+            <!-- 姓名 -->
+            <el-table-column label="姓名" width="100" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.name" placeholder="姓名"></el-input>
+                <span v-else>{{scope.row.name}}</span>
+              </template>
+            </el-table-column>
+            <!-- 职务 -->
+            <el-table-column label="职务" width="100" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.post" placeholder="职务"></el-input>
+                <span v-else>{{scope.row.post}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="account" label="登陆账号" width="182" show-overflow-tooltip></el-table-column>
             <el-table-column label="密码状态" width="100" class-name="pw-cell-class">
               <template slot-scope="scope">
-                <span v-if="scope.row.status">已经自设</span>
+                <span v-if="scope.row.status===1">已经自设</span>
                 <span v-else>初始密码</span>
               </template>
             </el-table-column>
@@ -221,24 +242,18 @@
             </el-table-column>
             <el-table-column label="重置密码" width="100" class-name="retpw-cell-class">
               <template slot-scope="scope">
-                <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">立即重置</el-button>
+                <el-button
+                  type="warning"
+                  size="mini"
+                  @click="handleReset(scope.$index, scope.row)"
+                >立即重置</el-button>
               </template>
             </el-table-column>
             <el-table-column label width="100">
               <template slot-scope="scope">
-                <span @click="handleEdit(scope.$index, scope.row)">隐藏</span>
+                <span @click="handleHidden(scope.$index, scope.row)">隐藏</span>
               </template>
             </el-table-column>
-            <!-- <el-table-column label="操作">
-              <template slot-scope="scope">
-                <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                <el-button
-                  size="mini"
-                  type="danger"
-                  @click="handleDelete(scope.$index, scope.row)"
-                >删除</el-button>
-              </template>
-            </el-table-column>-->
           </el-table>
         </el-main>
         <el-footer height="100px" class="admin-footer">
@@ -271,22 +286,21 @@ export default {
       uploadersList: [], // 上传人
       addUploadDisc: '', // 添加照片说明
       startUpload: false, // 开始上传标志
+      isAdd: false, // 新增标志
       tableData: [{
-        date: '政教处',
+        dept: '政教处',
         name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        post: '主任',
+        account: 'Asffsdfsfa',
+        status: 0,
+        isNew: false
       }, {
-        date: '政教处',
+        dept: '政教处',
         name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '政教处',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '政教处',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
+        post: '主任',
+        account: 'Asffsdfsfa',
+        status: 1,
+        isNew: false
       }],
       time: {
         year: '',
@@ -347,10 +361,10 @@ export default {
     this.getMarkList()
   },
   methods: {
-    handleEdit (index, row) {
+    handleReset (index, row) {
       console.log(index, row)
     },
-    handleDelete (index, row) {
+    handleHidden (index, row) {
       console.log(index, row)
     },
     /**
@@ -493,13 +507,18 @@ export default {
     tableVisibleAdmin (value) {
       this.dialogAdmin = value
     },
-    // 开始上传事件
-    startPhoto () {
-      this.startUpload = true
-    },
-    // 取消上传事件
-    canclePhoto () {
-      this.startUpload = false
+    // 管理员设置新增
+    addRole () {
+      this.isAdd = true
+      this.tableData.push({
+        dept: '',
+        name: '',
+        post: '',
+        account: '',
+        status: 0,
+        isNew: true
+      })
+
     }
   }
 }
@@ -909,7 +928,7 @@ export default {
 .dialog-admin .cancel-admin {
   width: 95px;
   height: 32px;
-  line-height: 32px;
+  line-height: 30px;
   padding: 0;
   color: #fff;
   border-color: #f8b626;

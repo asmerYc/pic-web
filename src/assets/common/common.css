@@ -61,6 +61,23 @@ img {
   color: #f8b626;
 }
 
+.el-button--warning {
+  color: #FFF;
+  background-color: #f8b626;
+  border-color: #f8b626;
+}
+
+.el-input.is-active .el-input__inner,
+.el-input__inner:focus {
+  border-color: #DCDFE6;
+  outline: 0;
+}
+
+.el-dialog__headerbtn:focus .el-dialog__close,
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: #f8b626;
+}
+
 /* 模态框 */
 .el-dialog {
   width: 74%;
@@ -124,7 +141,7 @@ img {
 
 .dialog-admin .el-radio-button--mini .el-radio-button__inner {
   font-size: 16px;
-  padding: 5px 10px;
+  padding: 3px 10px;
 }
 
 .dialog-admin .el-table th {
@@ -135,6 +152,7 @@ img {
   margin-right: 20px;
   text-align: center;
   color: #353535;
+  font-size: 13px;
 }
 
 .dialog-admin .el-table th>.cell {
@@ -158,4 +176,34 @@ img {
 
 .dialog-admin .el-table__row .retpw-cell-class .cell {
   padding: 0px;
+}
+
+.dialog-admin .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+  background-color: #f8b626;
+  border-color: #f8b626;
+  box-shadow: -1px 0 0 0 #f8b626;
+}
+
+.dialog-admin .el-radio-button__inner:hover {
+  color: #f8b626;
+}
+
+.dialog-admin .is-active .el-radio-button__inner:hover {
+  color: #fff;
+}
+
+.dialog-admin .el-button--warning {
+  padding: 4px 13px;
+}
+
+.dialog-admin .el-button--mini {
+  font-size: 13px;
+}
+
+.dialog-admin .el-input__inner {
+  height: 22px;
+  line-height: 22px;
+  padding: 0 5px;
+  text-align: center;
+  outline: none;
 }
