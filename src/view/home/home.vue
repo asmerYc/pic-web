@@ -32,7 +32,7 @@
                 <div class="tags-type">选择标签：</div>
                 <div class="tags-row">
                   <template v-for="(item,index) in tagsList">
-                    <span v-if="index < 8" @click="selectTags(item)" :key="index">{{ item.name}}</span>
+                    <span @click="selectTags(item)" :key="index">{{ item.name}}</span>
                   </template>
                 </div>
                 <div class="tags-more"></div>
@@ -137,12 +137,12 @@
           <div class="upload-photos">
             <div v-for="(file,index) in files" class="upload-single-photo" :key="index">
               <img v-if="file.blob" :src="file.blob" />
-              <span class="extraItem delete-btn" @click="$refs.uploader.remove(file)">
+              <div v-if="file.active || file.progress !== '0.00'" class="extraItem progress">
+                <span class="extraItem progressText">{{file.progress || 0}}%</span>
+                <div class="extraItem activeProgress" :style="{width: file.progress + '%'}"></div>
+              </div>
+              <span v-else class="extraItem delete-btn" @click="$refs.uploader.remove(file)">
                 <i class="el-icon-delete"></i>
-                <div class="extraItem progress" v-if="file.active || file.progress !== '0.00'">
-                  <span>{{file.progress}}%</span>
-                  <div class="extraItem activeProgress" :style="{width: file.progress + '%'}"></div>
-                </div>
               </span>
             </div>
             <div class="add-photo" v-show="files.length<20">
@@ -152,8 +152,7 @@
                 v-model="files"
                 :multiple="true"
                 :maximum="20"
-                post-action="/post.method"
-                put-action="/put.method"
+                :custom-action="customAction"
                 @input-file="inputFile"
                 @input-filter="inputFilter"
               >添加照片</file-upload>
@@ -162,16 +161,16 @@
         </el-main>
         <el-footer height="100px" class="upload-footer">
           <el-button
-            v-if="!$refs.upload || !$refs.upload.active"
+            v-if="!$refs.uploader || !$refs.uploader.active"
             type="info"
             class="upload-btn start-upload"
-            @click="$refs.upload.active = true"
+            @click="$refs.uploader.active = true"
           >开始上传</el-button>
           <el-button
             v-else
             type="info"
             class="upload-btn cancle-upload"
-            @click="$refs.upload.active = false"
+            @click="$refs.uploader.active = false"
           >取消上传</el-button>
           <!-- <el-button
             v-if="!startUpload"
@@ -253,7 +252,6 @@
 
 <script>
 import headerVue from '../header'
-import {queryMark} from '../../request/api'
 import fileUpload from 'vue-upload-component'
 export default {
   data () {
@@ -342,6 +340,9 @@ export default {
   components: { headerVue, fileUpload },
   created () {
     this.getData()
+    // 获取班级列表
+    this.getClassList()
+    // 获取标签列表
     this.getMarkList()
   },
   methods: {
@@ -390,56 +391,42 @@ export default {
         }
       }
     },
+    // 组件上传照片方法
+    customAction () {
+      console.log(this.files)
+    },
+    // 获取标签列表
     getMarkList () {
-      queryMark(null).then(res => {
-        console.log(res)
+      this.$axios.get(this.$api.getTagsList, { params: { size: 13, page: 1 } }).then(response => {
+        console.log(response)
+        let res = response.data
+        this.tagsList = res.data
+        this.tagsList.forEach(item => {
+          item.selected = false
+        })
+        this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
       })
     },
+    // 获取班级列表
+    getClassList () {
+      let token = localStorage.getItem('Authorization');
+      this.$axios.post(this.$api.getClassList, {
+        token: token
+      }).then(function (response) {
+        console.log(response)
+      }).catch(function (error) {
+        console.log(error)
+      });
+      //   queryClass(null).then(res => {
+      //     console.log('getClassList', res)
+      //     this.classList = res.data
+      //     this.classList.forEach(item => {
+      //       item.selected = false
+      //     })
+      //     this.classList = JSON.parse(JSON.stringify(this.classList))
+      //   })
+    },
     getData () {
-      this.classList = [
-        { id: 1, name: '2018级1班' },
-        { id: 2, name: '2015级6班' },
-        { id: 3, name: '2018级1班' },
-        { id: 4, name: '2018级1班' },
-        { id: 5, name: '2018级1班' },
-        { id: 6, name: '2018级1班' },
-        { id: 7, name: '2018级1班' },
-        { id: 8, name: '2018级1班' },
-        { id: 9, name: '2018级1班' },
-        { id: 10, name: '2018级1班' },
-        { id: 11, name: '2018级1班' },
-        { id: 12, name: '2018级1班' },
-        { id: 13, name: '2018级1班' },
-        { id: 14, name: '2018级1班' },
-        { id: 15, name: '2018级1班' },
-        { id: 16, name: '2018级1班' },
-        { id: 17, name: '2018级1班' },
-        { id: 18, name: '2018级1班' },
-        { id: 19, name: '2018级1班' },
-        { id: 20, name: '2018级1班' }
-      ]
-      this.tagsList = [
-        { id: 1, name: '运动会' },
-        { id: 2, name: '运动会' },
-        { id: 3, name: '运动会' },
-        { id: 4, name: '运动会' },
-        { id: 5, name: '运动会' },
-        { id: 6, name: '运动会' },
-        { id: 7, name: '运动会' },
-        { id: 8, name: '运动会' },
-        { id: 9, name: '运动会' },
-        { id: 10, name: '运动会' },
-        { id: 11, name: '运动会' },
-        { id: 12, name: '运动会' },
-        { id: 13, name: '运动会' },
-        { id: 14, name: '运动会' },
-        { id: 15, name: '运动会' },
-        { id: 16, name: '运动会' },
-        { id: 17, name: '运动会' },
-        { id: 18, name: '运动会' },
-        { id: 19, name: '运动会' },
-        { id: 20, name: '运动会' }
-      ]
       this.uploadersList = [
         { id: 1, name: '摄影师' },
         { id: 2, name: '摄影师' },
@@ -462,17 +449,9 @@ export default {
         { id: 19, name: '摄影师' },
         { id: 20, name: '摄影师' }
       ]
-      this.classList.forEach(item => {
-        item.selected = false
-      })
-      this.tagsList.forEach(item => {
-        item.selected = false
-      })
       this.uploadersList.forEach(item => {
         item.selected = false
       })
-      this.classList = JSON.parse(JSON.stringify(this.classList))
-      this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
       this.uploadersList = JSON.parse(JSON.stringify(this.uploadersList))
     },
     load () {
@@ -837,15 +816,25 @@ export default {
 .dialog-photo .upload-single-photo .delete-btn {
   cursor: pointer;
 }
-.dialog-photo .upload-single-photo .progress {
-  z-index: 1;
-}
-.dialog-photo .upload-single-photo .activeProgress {
-  background-color: #f8b626;
-  z-index: 2;
-}
 .dialog-photo .upload-single-photo:hover .delete-btn {
   display: flex;
+}
+.dialog-photo .upload-single-photo .progress {
+  display: flex;
+  opacity: 0.9;
+  z-index: 1;
+}
+.dialog-photo .upload-single-photo .progressText {
+  display: flex;
+  font-size: 14px;
+  top: 0px;
+  z-index: 1;
+  background-color: transparent;
+}
+.dialog-photo .upload-single-photo .activeProgress {
+  display: flex;
+  top: 0px;
+  background-color: #f8b626;
 }
 .dialog-photo .upload-single-photo img {
   position: absolute;

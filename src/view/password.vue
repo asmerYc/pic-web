@@ -48,7 +48,6 @@
 </template>
 
 <script>
-import { resetPsd } from '../request/api'
 import { mapMutations, mapState, mapGetters } from 'vuex';
 
 export default {
@@ -106,11 +105,12 @@ export default {
         const body = {
           account: this.getAccount,
           password: this.ruleForm.pass,
-          new_pwd: this.ruleForm.checkPass,
+          new_pwd: this.ruleForm.checkPass
         }
         if (valid) {
-          resetPsd(body).then(res => {
-            console.log(res);
+          this.$axios.post(this.$api.resetPsd, body).then(response => {
+            let res = response.data
+            console.log(res)
           })
         } else {
           console.log('error submit!!');

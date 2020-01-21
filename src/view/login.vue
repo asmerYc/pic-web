@@ -23,7 +23,6 @@
           <div class="loginfo_top">登陆账号</div>
           <div class="loginfo_bottom">ACCOUNT NUMBER</div>
         </div>
-        <el-input @blur="onblur" size="medium" placeholder="用户" v-model="userName"></el-input>
         <el-input
           @blur="onblur"
           @input="watchInput"
@@ -59,7 +58,6 @@
 </template>
 
 <script>
-import { apiAddress, queryUser } from "../request/api";
 import { mapMutations } from "vuex";
 export default {
   data () {
@@ -88,8 +86,9 @@ export default {
         account: this.userName,
         password: this.passWord
       };
-      apiAddress(body)
-        .then(res => {
+      this.$axios.post(this.$api.login, body)
+        .then(response => {
+          let res = response.data
           if (res) {
             this.$message({
               message: "登录成功!",
@@ -116,11 +115,12 @@ export default {
     onblur () {
       // 在这去调用查询用户是否存在的接口
       if (this.userName) {
-        queryUser(this.userName)
-          .then(res => {
+        this.$axios.get(this.$api.getUser, { params: { account: this.userName } })
+          .then(response => {
+            let res = response.data
             this.isNewUser = !!(res && res.password_status === 0);
             if (res && res.code === 0) {
-              this.isDisabled = true;
+              this.isDisabled = true
               this.$message({
                 message: `${res.msg},请确认账号是否正确!`,
                 type: "error"

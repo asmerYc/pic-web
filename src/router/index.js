@@ -3,14 +3,11 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-const router =  new Router({
-  routes: [
-    {
-      path: '/helloWorld',
-      name: 'HelloWorld',
-      component: () => import('@/components/HelloWorld'),
-      meta: {
-        keepAlive: true
+const router = new Router({
+  routes: [{
+      path: '/',
+      redirect() {
+        return '/login'
       }
     },
     {
@@ -18,11 +15,12 @@ const router =  new Router({
       name: 'home',
       component: () => import('../view/home/home'),
       meta: {
-        keepAlive: true
+        keepAlive: true,
+        requiresAuth: true // 添加表示需要验证
       }
     },
     {
-      path: '/',
+      path: '/login',
       name: 'login',
       component: () => import('../view/login'),
       meta: {
@@ -38,23 +36,6 @@ const router =  new Router({
       }
     }
   ]
-  
-})
-// 导航守卫
-// 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
-router.beforeEach((to, from, next) => {
-  if (to.path === '/login') {
-    next();
-  } else {
-    let token = localStorage.getItem('Authorization');
- 
-    if (token === 'null' || token === '') {
-      next('/login');
-    } else {
-      next();
-    }
-  }
-});
 
- 
+})
 export default router;
