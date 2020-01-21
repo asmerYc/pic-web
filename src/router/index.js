@@ -28,6 +28,14 @@ const router =  new Router({
       meta: {
         keepAlive: false
       }
+    },
+    {
+      path: '/password',
+      name: 'password',
+      component: () => import('../view/password'),
+      meta: {
+        keepAlive: false
+      }
     }
   ]
   
