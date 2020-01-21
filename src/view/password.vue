@@ -18,6 +18,7 @@
     </div>
     <div class="main">
       <div class="logarea">
+        <div class="pwd-title">您正在修改登录密码</div>
         <el-form
           :model="ruleForm"
           status-icon
@@ -25,6 +26,7 @@
           ref="ruleForm"
           label-width="100px"
           class="demo-ruleForm"
+          style="margin-top:45px"
         >
           <el-form-item label="登录账户">
             <span class="user-name">{{account}}</span>
@@ -32,6 +34,9 @@
           <el-form-item label="请输入新密码" prop="pass">
             <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
           </el-form-item>
+          <!-- <el-form-item label="请输入新密码" prop="pass">
+            <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+          </el-form-item> -->
           <el-form-item label="请重复新密码" prop="checkPass">
             <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
           </el-form-item>
@@ -42,7 +47,7 @@
       </div>
     </div>
     <div class="footer">
-      <div class="top">©️2018 lu99.xadmin.029tulingling.com 版权所有</div>
+      ©️2018 lu99.xadmin.029tulingling.com 版权所有
     </div>
   </div>
 </template>
@@ -100,7 +105,6 @@ export default {
     // this.keyupSubmit()
   },
   methods: {
-    // ...mapMutations(['account']),
     submitForm (formName) {
       this.$refs[formName].validate((valid) => {
         const body = {
@@ -168,11 +172,12 @@ export default {
 }
 .main {
   display: flex;
-  width: 100%;
+  /* width: 100%; */
   flex: 1;
   background-color: #f1f1f1;
   justify-content: center;
   align-items: center;
+  color: #555555;
 }
 .main .logarea {
   display: flex;
@@ -183,6 +188,14 @@ export default {
   background-color: white;
   border: 1px solid #acacac;
   border-radius: 5px;
+  flex-direction: column;
+}
+.logarea .pwd-title {
+ line-height: 48px;
+ border-bottom: 1px solid #ccc;
+ width: 760px;
+ margin-top: -115px;
+ font-weight: bold;
 }
 
 .logarea >>> input.el-input__inner {
@@ -200,6 +213,8 @@ export default {
   margin-bottom: 14px;
   width: 220px;
   height: 30px;
+  font-size: 14px;
+  color:#555555;
 }
 .logarea /deep/ .el-input__suffix {
   top: -8px;
@@ -227,5 +242,13 @@ export default {
 }
 .sure-btn {
   margin-top: 24px;
+}
+.footer {
+  text-align: center;
+  font-size: 12px;
+  color:#858585;
+  height: 200px;
+  margin-top: -108px;
+
 }
 </style>

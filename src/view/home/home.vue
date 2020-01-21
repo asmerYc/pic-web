@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header-vue @tableVisibleAdmin="tableVisibleAdmin"></header-vue>
+    <!-- <header-vue @tableVisibleAdmin="tableVisibleAdmin"></header-vue> -->
     <el-container class="home">
       <!-- 左侧边栏 -->
       <el-aside class="aside" width="245px">
