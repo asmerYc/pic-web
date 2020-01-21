@@ -23,7 +23,7 @@
           <div class="loginfo_top">登陆账号</div>
           <div class="loginfo_bottom">ACCOUNT NUMBER</div>
         </div>
-        <el-input @blur="onblur" size="medium" placeholder="用户" v-model="userName"></el-input>
+        <!-- <el-input @blur="onblur" size="medium" placeholder="用户" v-model="userName"></el-input> -->
         <el-input
           @blur="onblur"
           @input="watchInput"
@@ -120,6 +120,7 @@ export default {
           .then(res => {
             this.isNewUser = !!(res && res.password_status === 0);
             if (res && res.code === 0) {
+              // debugger
               this.isDisabled = true;
               this.$message({
                 message: `${res.msg},请确认账号是否正确!`,
@@ -127,7 +128,10 @@ export default {
               });
               return;
             }
-            this.saveUser(this.userName);
+            const user = {
+              ...res
+            }
+            this.saveUser(user);
             this.isDisabled = false;
           })
           .catch(error => {

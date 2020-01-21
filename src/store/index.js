@@ -9,7 +9,8 @@ const store = new Vuex.Store({
       ? localStorage.getItem("Authorization")
       : "",
     is_manager: false,
-    account: ""
+    account: "",
+    password: "",
   },
 
   mutations: {
@@ -20,8 +21,9 @@ const store = new Vuex.Store({
       localStorage.setItem("Authorization", user.Authorization);
     },
     //存储用户名
-    saveUser(state, userName) {
-      state.account = userName;
+    saveUser(state, user) {
+      state.account = user.account;
+      state.password = user.password;
     }
   },
   getters: {
