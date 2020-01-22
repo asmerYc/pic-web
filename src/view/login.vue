@@ -96,7 +96,7 @@ export default {
               type: "success"
             });
             const user = {
-              Authorization: res.token,
+              token: res.token,
               is_manager: res.is_manager
             };
             this.changeLogin(user);
