@@ -4,7 +4,12 @@
     <el-container class="home">
       <!-- 左侧边栏 -->
       <el-aside class="aside" width="245px">
-        <el-input class="search" placeholder="按入学年份搜索" v-model="selectEnterYear">
+        <el-input
+          class="search"
+          placeholder="请输入班级名称"
+          v-model="inputClassName"
+          @keyup.enter.native="inputClass"
+        >
           <i slot="suffix" class="el-input__icon el-icon-search"></i>
         </el-input>
         <div class="search-title">学校图片</div>
@@ -268,7 +273,7 @@
 <script>
 import headerVue from '../header'
 import fileUpload from 'vue-upload-component'
-import { queryMark, queryClass } from '../../request/api'
+import { queryMark, queryClass, inputClass } from '../../request/api'
 export default {
   data () {
     return {
@@ -279,7 +284,7 @@ export default {
       count: 20,
       page: 0, //  班级列表page
       onEdit: false, // 编辑状态
-      selectEnterYear: '', // 选中的入学年份
+      inputClassName: '', // 输入的班级名称
       inputTagsSearch: '', // input标签搜索
       classList: [], //  左侧班级列表
       tagsList: [], // 标签
@@ -413,11 +418,14 @@ export default {
     // 获取标签列表
     getMarkList () {
       queryMark({ size: 13, page: 1 }).then(response => {
-        this.tagsList = response.data
-        this.tagsList.forEach(item => {
-          item.selected = false
-        })
-        this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
+        if (response.data) {
+          this.tagsList = response.data
+          this.tagsList.forEach(item => {
+            item.selected = false
+          })
+          this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
+        }
+
       })
     },
     // 获取班级列表
@@ -425,13 +433,34 @@ export default {
       queryClass(null).then(res => {
         console.log('getClassList', res)
         if (res) {
-          this.classList = res.data
-          this.classList.forEach(item => {
-            item.selected = false
-          })
-          this.classList = JSON.parse(JSON.stringify(this.classList))
+          if (res) {
+            this.classList = res
+            this.classList.forEach(item => {
+              item.selected = false
+            })
+            this.classList = JSON.parse(JSON.stringify(this.classList))
+          }
         }
       })
+    },
+    inputClass () {
+      if (this.inputClassName.trim() === "") {
+        this.getClassList();
+      } else {
+        inputClass({ name: this.inputClassName.trim() }).then(res => {
+          console.log('inputClass', res)
+          if (res) {
+            if (res) {
+              this.classList = res
+              this.classList.forEach(item => {
+                item.selected = false
+              })
+              this.classList = JSON.parse(JSON.stringify(this.classList))
+            }
+          }
+        })
+      }
+
     },
     getData () {
       this.uploadersList = [
@@ -739,6 +768,7 @@ export default {
   width: auto;
   height: auto;
   max-width: 100px;
+  max-height: 100px;
 }
 .single-photo .choose-icon {
   position: absolute;
@@ -856,6 +886,7 @@ export default {
   width: auto;
   height: auto;
   max-width: 180px;
+  max-height: 180px;
 }
 .dialog-photo .upload-footer {
   display: flex;
