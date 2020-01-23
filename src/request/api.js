@@ -13,3 +13,7 @@ export const queryClass = p => get("/api/v1/management/get_class", p);
 export const resetPsd = p => post("/api/v1/admin/reset_oldpwd", p);
 //班级搜索 输入查询
 export const inputClass = p => get("/api/v1/management/class_byname", p);
+//查询子账户列表
+export const queryUserList = p => get("/api/v1/admin/son_list", p);
+//新增子账户
+export const addTheUser = p => post("/api/v1/admin/grant_user", p);

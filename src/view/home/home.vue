@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- <header-vue @tableVisibleAdmin="tableVisibleAdmin"></header-vue> -->
+    <header-vue @tableVisibleAdmin="tableVisibleAdmin"></header-vue>
     <el-container class="home">
       <!-- 左侧边栏 -->
       <el-aside class="aside" width="245px">
@@ -198,7 +198,13 @@
     <!-- 管理员设置弹窗 -->
     <el-dialog title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
       <span slot="title">
-        <el-button type="primary" icon="el-icon-plus" class="add-admin" @click="addRole">新增</el-button>
+        <el-button
+          :disabled="isAdd"
+          type="primary"
+          icon="el-icon-plus"
+          class="add-admin"
+          @click="addUser"
+        >新增</el-button>
       </span>
       <el-container>
         <el-main class="admin-main">
@@ -206,8 +212,12 @@
             <!-- 部门 -->
             <el-table-column label="部门" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.dept" placeholder="部门"></el-input>
-                <span v-else>{{scope.row.dept}}</span>
+                <el-input
+                  v-if="isAdd && scope.row.isNew"
+                  v-model="scope.row.department"
+                  placeholder="部门"
+                ></el-input>
+                <span v-else>{{scope.row.department}}</span>
               </template>
             </el-table-column>
             <!-- 姓名 -->
@@ -220,24 +230,34 @@
             <!-- 职务 -->
             <el-table-column label="职务" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.post" placeholder="职务"></el-input>
-                <span v-else>{{scope.row.post}}</span>
+                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.duty" placeholder="职务"></el-input>
+                <span v-else>{{scope.row.duty}}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="account" label="登陆账号" width="182" show-overflow-tooltip></el-table-column>
+            <!-- 登陆账号 -->
+            <el-table-column label="登陆账号" width="182" show-overflow-tooltip>
+              <template slot-scope="scope">
+                <el-input
+                  v-if="isAdd && scope.row.isNew"
+                  v-model="scope.row.account"
+                  placeholder="登陆账号"
+                ></el-input>
+                <span v-else>{{scope.row.account}}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="密码状态" width="100" class-name="pw-cell-class">
               <template slot-scope="scope">
-                <span v-if="scope.row.status===1">已经自设</span>
+                <span v-if="scope.row.password_status===1">已经自设</span>
                 <span v-else>初始密码</span>
               </template>
             </el-table-column>
             <el-table-column label="权限开放" width="100" class-name="role-cell-class">
               <template slot-scope="scope">
-                <el-radio-group v-model="scope.row.open" size="mini">
-                  <el-radio-button label="y">
+                <el-radio-group v-model="scope.row.already_up" size="mini">
+                  <el-radio-button label="0">
                     <i class="el-icon-check"></i>
                   </el-radio-button>
-                  <el-radio-button label="n">
+                  <el-radio-button label="1">
                     <i class="el-icon-close"></i>
                   </el-radio-button>
                 </el-radio-group>
@@ -254,14 +274,14 @@
             </el-table-column>
             <el-table-column label width="100">
               <template slot-scope="scope">
-                <span @click="handleHidden(scope.$index, scope.row)">隐藏</span>
+                <span class="hide-user-btn" @click="handleHidden(scope.$index, scope.row)">隐藏</span>
               </template>
             </el-table-column>
           </el-table>
         </el-main>
-        <el-footer height="100px" class="admin-footer">
-          <el-button class="cancel-admin">取消</el-button>
-          <el-button type="primary" class="save-admin">保存</el-button>
+        <el-footer v-show="isAdd" height="100px" class="admin-footer">
+          <el-button class="cancel-admin" @click="getUserList">取消</el-button>
+          <el-button type="primary" class="save-admin" @click="saveUser">保存</el-button>
         </el-footer>
       </el-container>
     </el-dialog>
@@ -271,38 +291,24 @@
 <script>
 import headerVue from '../header'
 import fileUpload from 'vue-upload-component'
-import { queryMark, queryAdminMark, queryClass, inputClass } from '../../request/api'
+import { queryMark, queryAdminMark, queryClass, inputClass, queryUserList, addTheUser } from '../../request/api'
 export default {
   data () {
     return {
-      files: [],
-      dialogAdmin: false,
-      dialogPhoto: false,
+      files: [], // 上传的照片file，最大为20个file
+      dialogAdmin: false,//管理员弹窗显示
+      dialogPhoto: false,//照片上传弹窗显示
       count: 20,
-      onEdit: false, // 编辑状态
-      inputClassName: '', // 输入的班级名称
-      inputTagsSearch: '', // input标签搜索
+      onEdit: false, // 首页照片是编辑状态：可选择提交或者下载
+      inputClassName: '', // 输入班级名称
+      inputTagsSearch: '', // 输入标签搜索
       classList: [], //  左侧班级列表
-      tagsList: [], // 标签
-      uploadersList: [], // 上传人
-      addUploadDisc: '', // 添加照片说明
+      tagsList: [], // 标签列表
+      uploadersList: [], // 上传人标签列表
+      addUploadDisc: '', // 上传照片中的照片说明
       startUpload: false, // 开始上传标志
-      isAdd: false, // 新增标志
-      tableData: [{
-        dept: '政教处',
-        name: '王小虎',
-        post: '主任',
-        account: 'Asffsdfsfa',
-        status: 0,
-        isNew: false
-      }, {
-        dept: '政教处',
-        name: '王小虎',
-        post: '主任',
-        account: 'Asffsdfsfa',
-        status: 1,
-        isNew: false
-      }],
+      isAdd: false, // 子账户新增标志
+      tableData: [],// 子账户列表
       time: {
         year: '',
         month: ''
@@ -385,7 +391,6 @@ export default {
           })
           this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
         }
-
       })
     },
     // 获取管理员标签列表
@@ -509,17 +514,58 @@ export default {
     // 打开管理员设置弹窗
     tableVisibleAdmin (value) {
       this.dialogAdmin = value
+      this.getUserList()
+    },
+    //获取子账户列表
+    getUserList () {
+      queryUserList({ size: 99999, page: 1 }).then(response => {
+        if (response.data) {
+          this.isAdd = false
+          this.tableData = response.data
+          this.tableData.forEach(item => {
+            item.isNew = false
+          })
+          this.tableData = JSON.parse(JSON.stringify(this.tableData))
+        }
+      })
     },
     // 管理员设置新增
-    addRole () {
+    addUser () {
       this.isAdd = true
       this.tableData.push({
-        dept: '',
-        name: '',
-        post: '',
         account: '',
-        status: 0,
+        name: '',
+        duty: '',
+        department: '',
         isNew: true
+      })
+    },
+    // 保存子账户
+    saveUser () {
+      let newUser = {}
+      this.tableData.forEach(item => {
+        if (item.isNew) {
+          newUser = {
+            account: item.account,
+            name: item.name,
+            duty: item.duty,
+            department: item.department,
+          }
+        }
+      })
+      addTheUser(newUser).then(response => {
+        if (response.code === 1) {
+          this.$message({
+            message: response.msg,
+            type: "success"
+          });
+          this.getUserList()
+        } else {
+          this.$message({
+            message: response.msg,
+            type: "error"
+          });
+        }
       })
     },
     // 重置密码
@@ -947,6 +993,7 @@ export default {
   background-color: #f8b626;
 }
 .dialog-admin .cancel-admin {
+  margin-right: 10px;
   color: #f8b626;
   background-color: #fff;
 }
@@ -956,6 +1003,9 @@ export default {
   padding: 0px 30px;
   border-top: 2px solid #e0e0e0;
 }
+.dialog-admin .hide-user-btn {
+  cursor: pointer;
+}
 .dialog-admin .admin-footer {
   display: flex;
   align-items: center;
@@ -963,8 +1013,5 @@ export default {
   width: 100%;
   padding: 25px 50px;
   border-top: 2px solid #e0e0e0;
-}
-.dialog-admin .cancel-admin {
-  margin-right: 10px;
 }
 </style>
