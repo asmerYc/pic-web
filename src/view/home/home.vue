@@ -14,7 +14,7 @@
         </el-input>
         <div class="search-title">学校图片</div>
         <div class="class-list">
-          <ul class="infinite-list" v-infinite-scroll="load" style="overflow:auto">
+          <ul class="infinite-list" v-infinite-scroll style="overflow:auto">
             <li
               v-for="(item,index) in classList"
               :class="['infinite-list-item','class-item',item.selected?'active':null ]"
@@ -33,16 +33,15 @@
               <el-button class="tag-search-btn" slot="append" icon="el-icon-search"></el-button>
             </el-input>
             <div>
-              <div class="tags-container">
+              <div v-if="this.tagsList.length !== 0" class="tags-container">
                 <div class="tags-type">选择标签：</div>
                 <div class="tags-row">
                   <template v-for="(item,index) in tagsList">
                     <span @click="selectTags(item)" :key="index">{{ item.name}}</span>
                   </template>
                 </div>
-                <div class="tags-more"></div>
               </div>
-              <div class="tags-container">
+              <div v-if="this.uploadersList.length !== 0" class="tags-container">
                 <div class="tags-type">选择上传人：</div>
                 <div class="tags-row">
                   <template v-for="(item,index) in uploadersList">
@@ -53,7 +52,6 @@
                     >{{ item.name}}</span>
                   </template>
                 </div>
-                <div class="tags-more"></div>
               </div>
               <div class="tags-container">
                 <div class="tags-type">选择日期：</div>
@@ -273,16 +271,14 @@
 <script>
 import headerVue from '../header'
 import fileUpload from 'vue-upload-component'
-import { queryMark, queryClass, inputClass } from '../../request/api'
+import { queryMark, queryAdminMark, queryClass, inputClass } from '../../request/api'
 export default {
   data () {
     return {
-      cell: '',
       files: [],
       dialogAdmin: false,
       dialogPhoto: false,
       count: 20,
-      page: 0, //  班级列表page
       onEdit: false, // 编辑状态
       inputClassName: '', // 输入的班级名称
       inputTagsSearch: '', // input标签搜索
@@ -359,19 +355,112 @@ export default {
   },
   components: { headerVue, fileUpload },
   created () {
-    this.getData()
     // 获取班级列表
     this.getClassList()
     // 获取标签列表
     this.getMarkList()
+    // 获取管理员标签列表
+    this.getAdminMarkList()
   },
   methods: {
-    handleReset (index, row) {
-      console.log(index, row)
+    // 获取班级列表
+    getClassList () {
+      queryClass(null).then(res => {
+        if (res) {
+          this.classList = res
+          this.classList.forEach(item => {
+            item.selected = false
+          })
+          this.classList = JSON.parse(JSON.stringify(this.classList))
+        }
+      })
     },
-    handleHidden (index, row) {
-      console.log(index, row)
+    // 获取标签列表
+    getMarkList () {
+      queryMark({ size: 13, page: 1 }).then(response => {
+        if (response.data) {
+          this.tagsList = response.data
+          this.tagsList.forEach(item => {
+            item.selected = false
+          })
+          this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
+        }
+
+      })
     },
+    // 获取管理员标签列表
+    getAdminMarkList () {
+      queryAdminMark(null).then(response => {
+        if (response) {
+          this.uploadersList = response
+          this.uploadersList.forEach(item => {
+            item.selected = false
+          })
+          this.uploadersList = JSON.parse(JSON.stringify(this.uploadersList))
+        }
+      })
+    },
+    // 班级模糊查询
+    inputClass () {
+      if (this.inputClassName.trim() === "") {
+        this.getClassList();
+      } else {
+        inputClass({ name: this.inputClassName.trim() }).then(res => {
+          if (res) {
+            if (res.msg && res.msg === "结果为空") {
+              this.$message({
+                message: "查询结果为空!",
+                type: "warning"
+              });
+              this.classList = []
+              return
+            }
+            this.classList = res
+            this.classList.forEach(item => {
+              item.selected = false
+            })
+            this.classList = JSON.parse(JSON.stringify(this.classList))
+          }
+        })
+      }
+    },
+    //点击班级选中
+    selectClass (id) {
+      this.classList.forEach(item => {
+        item.selected = false
+        if (id === item.id) {
+          item.selected = true
+        }
+      })
+    },
+    // 标签选择
+    selectTags (item) {
+      this.searchValue(item.name)
+    },
+    // 上传人选择
+    selectUploaders (item) {
+      this.searchValue(item.name)
+    },
+    // 年份选择
+    yearSelect (value) {
+      this.searchValue(value)
+    },
+    // 月份选择
+    monthSelect (value) {
+      this.searchValue(value)
+    },
+    // 根据标签填入搜索框的value
+    searchValue (value) {
+      this.inputTagsSearch = this.inputTagsSearch.trim()
+      if (!value) { return }
+      if (this.inputTagsSearch.length === 0) {
+        this.inputTagsSearch = value
+      } else {
+        this.inputTagsSearch = this.inputTagsSearch + ' 、' + value
+      }
+    },
+
+    /* 上传图片弹窗 */
     /**
      * Has changed
      * @param  Object|undefined   newFile   只读
@@ -415,123 +504,8 @@ export default {
     customAction () {
       console.log(this.files)
     },
-    // 获取标签列表
-    getMarkList () {
-      queryMark({ size: 13, page: 1 }).then(response => {
-        if (response.data) {
-          this.tagsList = response.data
-          this.tagsList.forEach(item => {
-            item.selected = false
-          })
-          this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
-        }
 
-      })
-    },
-    // 获取班级列表
-    getClassList () {
-      queryClass(null).then(res => {
-        console.log('getClassList', res)
-        if (res) {
-          if (res) {
-            this.classList = res
-            this.classList.forEach(item => {
-              item.selected = false
-            })
-            this.classList = JSON.parse(JSON.stringify(this.classList))
-          }
-        }
-      })
-    },
-    inputClass () {
-      if (this.inputClassName.trim() === "") {
-        this.getClassList();
-      } else {
-        inputClass({ name: this.inputClassName.trim() }).then(res => {
-          console.log('inputClass', res)
-          if (res) {
-            if (res) {
-              this.classList = res
-              this.classList.forEach(item => {
-                item.selected = false
-              })
-              this.classList = JSON.parse(JSON.stringify(this.classList))
-            }
-          }
-        })
-      }
-
-    },
-    getData () {
-      this.uploadersList = [
-        { id: 1, name: '摄影师' },
-        { id: 2, name: '摄影师' },
-        { id: 3, name: '摄影师' },
-        { id: 4, name: '摄影师' },
-        { id: 5, name: '摄影师' },
-        { id: 6, name: '摄影师' },
-        { id: 7, name: '摄影师' },
-        { id: 8, name: '摄影师' },
-        { id: 9, name: '摄影师' },
-        { id: 10, name: '摄影师' },
-        { id: 11, name: '摄影师' },
-        { id: 12, name: '摄影师' },
-        { id: 13, name: '摄影师' },
-        { id: 14, name: '摄影师' },
-        { id: 15, name: '摄影师' },
-        { id: 16, name: '摄影师' },
-        { id: 17, name: '摄影师' },
-        { id: 18, name: '摄影师' },
-        { id: 19, name: '摄影师' },
-        { id: 20, name: '摄影师' }
-      ]
-      this.uploadersList.forEach(item => {
-        item.selected = false
-      })
-      this.uploadersList = JSON.parse(JSON.stringify(this.uploadersList))
-    },
-    load () {
-      this.page += 1
-    },
-    // 侧边栏入学年份班级选择
-    selectClass (id) {
-      this.classList.forEach(item => {
-        item.selected = false
-        if (id === item.id) {
-          item.selected = true
-        }
-      })
-    },
-    // 标签选择
-    selectTags (item) {
-      console.log('Tags', item)
-      this.searchValue(item.name)
-    },
-    // 上传人选择
-    selectUploaders (item) {
-      console.log('Uploaders', item)
-      this.searchValue(item.name)
-    },
-    // 年份选择
-    yearSelect (value) {
-      console.log(value)
-      this.searchValue(value)
-    },
-    // 月份选择
-    monthSelect (value) {
-      console.log(value)
-      this.searchValue(value)
-    },
-    // 根据标签填入搜索框的value
-    searchValue (value) {
-      this.inputTagsSearch = this.inputTagsSearch.trim()
-      if (!value) { return }
-      if (this.inputTagsSearch.length === 0) {
-        this.inputTagsSearch = value
-      } else {
-        this.inputTagsSearch = this.inputTagsSearch + ' 、' + value
-      }
-    },
+    /* 管理员设置弹窗 */
     // 打开管理员设置弹窗
     tableVisibleAdmin (value) {
       this.dialogAdmin = value
@@ -547,8 +521,15 @@ export default {
         status: 0,
         isNew: true
       })
-
-    }
+    },
+    // 重置密码
+    handleReset (index, row) {
+      console.log(index, row)
+    },
+    // 隐藏按钮
+    handleHidden (index, row) {
+      console.log(index, row)
+    },
   }
 }
 </script>

@@ -5,6 +5,8 @@ export const queryUser = p => get("/api/v1/admin/is_newadmin", p);
 export const apiAddress = p => post("/api/v1/admin/app", p);
 //查询标签
 export const queryMark = p => get("/api/v1/management/get_label", p);
+//查询管理员标签
+export const queryAdminMark = p => get("/api/v1/admin/get_label", p);
 //查询班级
 export const queryClass = p => get("/api/v1/management/get_class", p);
 //设置密码 
