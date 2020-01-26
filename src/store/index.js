@@ -26,6 +26,7 @@ const store = new Vuex.Store({
       localStorage.setItem("token", user.token);
       if (user.is_manager) {
         localStorage.setItem("is_manager", user.is_manager);
+        state.is_manager = true;
       } else {
         localStorage.setItem("is_manager", false);
         state.is_manager = false;
@@ -34,6 +35,9 @@ const store = new Vuex.Store({
     //存储用户名
     saveUser(state, user) {
       state.account = user.account;
+    },
+    is_manager(state, is_manager) {
+      state.is_manager = is_manager;
     }
   },
   getters: {

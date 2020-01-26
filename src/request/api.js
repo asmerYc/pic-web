@@ -23,3 +23,5 @@ export const updateScope = p => post("/api/v1/admin/update_status", p);
 export const resetPwd = p => post("/api/v1/admin/reset_pwd", p);
 //隐藏账号
 export const hiddenPwd = p => post("/api/v1/admin/hidden", p);
+//
+export const getImgs = p => post("/api/v1/management/img_list", p);

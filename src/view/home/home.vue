@@ -310,6 +310,7 @@ import {
   updateScope,
   resetPwd,
   hiddenPwd,
+  getImgs,
 } from '../../request/api'
 export default {
   data () {
@@ -455,6 +456,9 @@ export default {
         if (id === item.id) {
           item.selected = true
         }
+      })
+      getImgs().then(res => {
+
       })
     },
     // 标签选择
