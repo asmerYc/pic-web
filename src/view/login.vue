@@ -32,18 +32,28 @@
           v-model="userName"
         ></el-input>
         <el-input
+          @blur="pwdBlur"
           placeholder="请输入密码"
           v-model="passWord"
           @keyup.enter.native="toLogin"
           type="password"
         ></el-input>
         <el-link
+          v-if="isNewUser"
           class="operatepsd"
           @click="operatePsd"
           :underline="false"
           v-bind:class="[isNewUser ? 'psdHighLight' : 'psdHighLight']"
           :disabled="isDisabled"
-        >{{ isNewUser ? "设置密码" : "重置密码" }}</el-link>
+        >设置密码</el-link>
+        <el-link
+          v-if="!isNewUser"
+          class="operatepsd"
+          @click="operatePsd"
+          :underline="false"
+          v-bind:class="[pwdPass ? 'psdHighLight' : 'psdHighLight']"
+          :disabled="pwdPass"
+        >重置密码</el-link>
         <el-button type="warning" @click="toLogin">登录</el-button>
       </div>
     </div>
@@ -68,14 +78,15 @@ export default {
       userName: "",
       passWord: "",
       isNewUser: false,
-      isDisabled: true
+      isDisabled: true,
+      pwdPass: true
     };
   },
   created () {
     // this.keyupSubmit()
   },
   methods: {
-    ...mapMutations(["changeLogin", "saveUser"]),
+    ...mapMutations(["changeLogin", "saveUser", "savePwd"]),
     toLogin () {
       if (this.userName === "" || this.passWord === "") {
         this.$message({
@@ -116,11 +127,12 @@ export default {
     onblur () {
       // 在这去调用查询用户是否存在的接口
       if (this.userName) {
+        console.log(this.isNewUser);
         queryUser(this.userName)
           .then(res => {
             this.isNewUser = !!(res && res.password_status === 0);
+            console.log(this.isNewUser);
             if (res && res.code === 0) {
-              // debugger
               this.isDisabled = true;
               this.$message({
                 message: `${res.msg},请确认账号是否正确!`,
@@ -138,6 +150,26 @@ export default {
             console.log(error);
           });
       }
+    },
+    pwdBlur () {
+
+      // if (!this.passWord) {
+      //   return;
+      // }
+      const body = {
+        account: this.userName,
+        password: this.passWord
+      };
+      this.savePwd(this.passWord);
+      apiAddress(body)
+        .then(res => {
+          if (res) {
+            this.pwdPass = false;
+          }
+        })
+        // eslint-disable-next-line handle-callback-err
+        .catch(error => {
+        });
     },
     // 监听用户输入框的值
     watchInput (value) {

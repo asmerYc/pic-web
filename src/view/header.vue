@@ -16,11 +16,15 @@
 <script>
 import { mapState } from 'vuex'
 export default {
-  computed:{
+  computed: {
     ...mapState([
       'is_manager'
     ])
   },
+  //   mounted () {
+  //     console.log(this.is_manager)
+  //     this.is_manager = localStorage.getItem('is_manager')
+  //   },
   data () {
     return {
     }

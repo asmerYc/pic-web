@@ -253,11 +253,15 @@
             </el-table-column>
             <el-table-column label="权限开放" width="100" class-name="role-cell-class">
               <template slot-scope="scope">
-                <el-radio-group v-model="scope.row.already_up" size="mini">
-                  <el-radio-button label="0">
+                <el-radio-group
+                  v-model="scope.row.scope"
+                  @change="scopeChange(scope.row)"
+                  size="mini"
+                >
+                  <el-radio-button label="16">
                     <i class="el-icon-check"></i>
                   </el-radio-button>
-                  <el-radio-button label="1">
+                  <el-radio-button label="0">
                     <i class="el-icon-close"></i>
                   </el-radio-button>
                 </el-radio-group>
@@ -268,6 +272,7 @@
                 <el-button
                   type="warning"
                   size="mini"
+                  :disabled="scope.row.password_status == 0 || scope.row.scope == 1 "
                   @click="handleReset(scope.$index, scope.row)"
                 >立即重置</el-button>
               </template>
@@ -291,7 +296,17 @@
 <script>
 import headerVue from '../header'
 import fileUpload from 'vue-upload-component'
-import { queryMark, queryAdminMark, queryClass, inputClass, queryUserList, addTheUser } from '../../request/api'
+import {
+  queryMark,
+  queryAdminMark,
+  queryClass,
+  inputClass,
+  queryUserList,
+  addTheUser,
+  updateScope,
+  resetPwd,
+  hiddenPwd,
+} from '../../request/api'
 export default {
   data () {
     return {
@@ -537,6 +552,7 @@ export default {
         name: '',
         duty: '',
         department: '',
+        scope: '',
         isNew: true
       })
     },
@@ -549,6 +565,7 @@ export default {
             account: item.account,
             name: item.name,
             duty: item.duty,
+            scope: item.scope,
             department: item.department,
           }
         }
@@ -568,13 +585,69 @@ export default {
         }
       })
     },
+    //权限切换
+    scopeChange (row) {
+      console.log(row)
+      const body = {
+        id: row.id,
+        scope: row.scope
+      }
+      updateScope(body)
+        .then(res => {
+          if (res.code === 1) {
+            this.$message({
+              message: res.msg,
+              type: 'success'
+            })
+            this.getUserList();
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error'
+            })
+          }
+        })
+    },
     // 重置密码
     handleReset (index, row) {
-      console.log(index, row)
+      const body = {
+        aid: row.id
+      }
+      resetPwd(body)
+        .then(res => {
+          if (res.code === 1) {
+            this.$message({
+              message: res.msg,
+              type: 'success'
+            })
+            this.getUserList();
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error'
+            })
+          }
+        })
     },
     // 隐藏按钮
     handleHidden (index, row) {
-      console.log(index, row)
+      const body = {
+        id: row.id
+      }
+      hiddenPwd(body).then(res => {
+        if (res.code === 1) {
+          this.$message({
+            message: res.msg,
+            type: 'success'
+          })
+          this.getUserList();
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+        }
+      })
     },
   }
 }

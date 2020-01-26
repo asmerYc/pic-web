@@ -36,7 +36,7 @@
           </el-form-item>
           <!-- <el-form-item label="请输入新密码" prop="pass">
             <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
-          </el-form-item> -->
+          </el-form-item>-->
           <el-form-item label="请重复新密码" prop="checkPass">
             <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
           </el-form-item>
@@ -46,9 +46,7 @@
         </el-form>
       </div>
     </div>
-    <div class="footer">
-      ©️2018 lu99.xadmin.029tulingling.com 版权所有
-    </div>
+    <div class="footer">©️2018 lu99.xadmin.029tulingling.com 版权所有</div>
   </div>
 </template>
 
@@ -58,7 +56,7 @@ import { mapMutations, mapState, mapGetters } from 'vuex';
 
 export default {
   computed: {
-    ...mapState(['account']),
+    ...mapState(['account', "password"]),
     ...mapGetters(['getAccount'])
   },
   data () {
@@ -107,15 +105,30 @@ export default {
   methods: {
     submitForm (formName) {
       this.$refs[formName].validate((valid) => {
+        console.log(this.password)
         const body = {
           account: this.getAccount,
-          password: this.ruleForm.pass,
+          password: this.password,
           new_pwd: this.ruleForm.checkPass,
         }
         if (valid) {
           resetPsd(body).then(res => {
-            console.log(res);
+            if (res && res.code === 1) {
+              this.$message({
+                message: "修改成功!",
+                type: "success"
+              })
+              this.$router.push({ path: "login" });
+            } else {
+              this.$message({
+                message: "修改失败!",
+                type: "error"
+              })
+            }
           })
+            .catch(error => {
+              conso.log(error)
+            })
         } else {
           console.log('error submit!!');
           return false;
@@ -191,11 +204,11 @@ export default {
   flex-direction: column;
 }
 .logarea .pwd-title {
- line-height: 48px;
- border-bottom: 1px solid #ccc;
- width: 760px;
- margin-top: -115px;
- font-weight: bold;
+  line-height: 48px;
+  border-bottom: 1px solid #ccc;
+  width: 760px;
+  margin-top: -115px;
+  font-weight: bold;
 }
 
 .logarea >>> input.el-input__inner {
@@ -214,7 +227,7 @@ export default {
   width: 220px;
   height: 30px;
   font-size: 14px;
-  color:#555555;
+  color: #555555;
 }
 .logarea /deep/ .el-input__suffix {
   top: -8px;
@@ -246,9 +259,8 @@ export default {
 .footer {
   text-align: center;
   font-size: 12px;
-  color:#858585;
+  color: #858585;
   height: 200px;
   margin-top: -108px;
-
 }
 </style>
