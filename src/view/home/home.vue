@@ -272,14 +272,18 @@
                 <el-button
                   type="warning"
                   size="mini"
-                  :disabled="scope.row.password_status == 0 || scope.row.scope == 1 "
+                  :disabled="scope.row.isNew || scope.row.password_status == 0 || scope.row.scope == 1 "
                   @click="handleReset(scope.$index, scope.row)"
                 >立即重置</el-button>
               </template>
             </el-table-column>
             <el-table-column label width="100">
               <template slot-scope="scope">
-                <span class="hide-user-btn" @click="handleHidden(scope.$index, scope.row)">隐藏</span>
+                <span
+                  v-if="!scope.row.isNew"
+                  class="hide-user-btn"
+                  @click="handleHidden(scope.$index, scope.row)"
+                >隐藏</span>
               </template>
             </el-table-column>
           </el-table>
