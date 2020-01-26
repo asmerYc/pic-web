@@ -6,7 +6,7 @@
       <span class="line">|</span>
       <span class="system-name">照片管理系统</span>
     </div>
-    <div class="right setting" v-if="is_manager" @click="openAdminTable">
+    <div class="right setting" v-if="is_manager=='true'?true:false" @click="openAdminTable">
       <img class="set-icon" src="../assets/images/设置_03.png" alt />
       <span>管理员设置</span>
     </div>
@@ -14,19 +14,19 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 export default {
   computed: {
-    ...mapState([
-      'is_manager'
+    ...mapGetters([
+      'getManager'
     ])
   },
-  //   mounted () {
-  //     console.log(this.is_manager)
-  //     this.is_manager = localStorage.getItem('is_manager')
-  //   },
+  created () {
+    this.is_manager = this.getManager
+  },
   data () {
     return {
+      is_manager: false
     }
   },
   methods: {
