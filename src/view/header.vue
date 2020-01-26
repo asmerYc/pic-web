@@ -30,6 +30,12 @@ export default {
     }
   },
   methods: {
+    // ...mapMutations(["is_manager"]),
+    // cgIsmanager () {
+    //   //   this.isShow = is_manager(localStorage.getItem('is_manager'));
+    //   this.isShow = localStorage.getItem('is_manager');
+    // },
+
     openAdminTable () {
       this.$emit('tableVisibleAdmin', true)
     },
