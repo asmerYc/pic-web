@@ -563,8 +563,7 @@ export default {
         }
       });
       const body = {
-        id: id,
-        page: 1
+        id: id
       };
       getImgs(body).then(res => {
         this.imgsInfo = res[0].user_class;
@@ -980,6 +979,7 @@ export default {
   margin-top: 10px;
 }
 .single-photo {
+  flex:1 1 auto;
   position: relative;
   width: 100px;
   height: 100px;
@@ -994,7 +994,7 @@ export default {
   transform: translate(-50%, -50%);
   width: auto;
   height: auto;
-  max-width: 100px;
+  max-width: 100%;
   max-height: 100px;
 }
 .single-photo .choose-icon {
@@ -1061,6 +1061,7 @@ export default {
   flex-wrap: wrap;
 }
 .dialog-photo .upload-single-photo {
+  flex:1 1 auto;
   position: relative;
   width: 180px;
   height: 180px;
@@ -1112,7 +1113,7 @@ export default {
   transform: translate(-50%, -50%);
   width: auto;
   height: auto;
-  max-width: 180px;
+  max-width: 100%;
   max-height: 180px;
 }
 .dialog-photo .upload-footer {
@@ -1165,6 +1166,7 @@ export default {
   align-items: center;
   width: 180px;
   height: 180px;
+  margin-right:20px;
   background-color: #e8e8e8;
   border: 1px solid #f1f1f1;
 }
