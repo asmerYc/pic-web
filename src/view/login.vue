@@ -45,7 +45,8 @@
           :underline="false"
           v-bind:class="[isNewUser ? 'psdHighLight' : 'psdHighLight']"
           :disabled="isDisabled"
-        >设置密码</el-link>
+          >设置密码</el-link
+        >
         <el-link
           v-if="!isNewUser"
           class="operatepsd"
@@ -53,7 +54,8 @@
           :underline="false"
           v-bind:class="[pwdPass ? 'psdHighLight' : 'psdHighLight']"
           :disabled="pwdPass"
-        >重置密码</el-link>
+          >重置密码</el-link
+        >
         <el-button type="warning" @click="toLogin">登录</el-button>
       </div>
     </div>
@@ -72,7 +74,7 @@
 import { apiAddress, queryUser } from "../request/api";
 import { mapMutations } from "vuex";
 export default {
-  data () {
+  data() {
     return {
       msg: "Welcome",
       userName: "",
@@ -82,12 +84,12 @@ export default {
       pwdPass: true
     };
   },
-  created () {
+  created() {
     // this.keyupSubmit()
   },
   methods: {
     ...mapMutations(["changeLogin", "saveUser", "savePwd"]),
-    toLogin () {
+    toLogin() {
       if (this.userName === "" || this.passWord === "") {
         this.$message({
           message: "账号或者密码不能为空!",
@@ -124,14 +126,12 @@ export default {
     },
     // 用户栏失去焦点事件,查询一下用户是新用户还是老用户
 
-    onblur () {
+    onblur() {
       // 在这去调用查询用户是否存在的接口
       if (this.userName) {
-        console.log(this.isNewUser);
         queryUser(this.userName)
           .then(res => {
             this.isNewUser = !!(res && res.password_status === 0);
-            console.log(this.isNewUser);
             if (res && res.code === 0) {
               this.isDisabled = true;
               this.$message({
@@ -142,7 +142,7 @@ export default {
             }
             const user = {
               ...res
-            }
+            };
             this.saveUser(user);
             this.isDisabled = false;
           })
@@ -151,8 +151,7 @@ export default {
           });
       }
     },
-    pwdBlur () {
-
+    pwdBlur() {
       // if (!this.passWord) {
       //   return;
       // }
@@ -168,16 +167,15 @@ export default {
           }
         })
         // eslint-disable-next-line handle-callback-err
-        .catch(error => {
-        });
+        .catch(error => {});
     },
     // 监听用户输入框的值
-    watchInput (value) {
+    watchInput(value) {
       if (!value) this.isDisabled = true;
     },
 
     // 重置或者设置密码按钮事件
-    operatePsd () {
+    operatePsd() {
       this.$router.push({ path: "password" });
     }
   }

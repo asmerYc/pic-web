@@ -16,11 +16,17 @@
         <div class="class-list">
           <ul class="infinite-list" v-infinite-scroll style="overflow:auto">
             <li
-              v-for="(item,index) in classList"
-              :class="['infinite-list-item','class-item',item.selected?'active':null ]"
+              v-for="(item, index) in classList"
+              :class="[
+                'infinite-list-item',
+                'class-item',
+                item.selected ? 'active' : null
+              ]"
               :key="index"
-              @click="selectClass( item.id)"
-            >{{ item.name }}</li>
+              @click="selectClass(item.id)"
+            >
+              {{ item.name }}
+            </li>
           </ul>
         </div>
       </el-aside>
@@ -29,27 +35,41 @@
         <!-- 头部标签 -->
         <el-header class="header" height="180px">
           <div>
-            <el-input class="tag-search" v-model="inputTagsSearch" placeholder="请输入内容">
-              <el-button class="tag-search-btn" slot="append" icon="el-icon-search"></el-button>
+            <el-input
+              class="tag-search"
+              v-model="inputTagsSearch"
+              placeholder="请输入内容"
+            >
+              <el-button
+                class="tag-search-btn"
+                slot="append"
+                icon="el-icon-search"
+              ></el-button>
             </el-input>
             <div>
               <div v-if="this.tagsList.length !== 0" class="tags-container">
                 <div class="tags-type">选择标签：</div>
                 <div class="tags-row">
-                  <template v-for="(item,index) in tagsList">
-                    <span @click="selectTags(item)" :key="index">{{ item.name}}</span>
+                  <template v-for="(item, index) in tagsList">
+                    <span @click="selectTags(item)" :key="index">{{
+                      item.name
+                    }}</span>
                   </template>
                 </div>
               </div>
-              <div v-if="this.uploadersList.length !== 0" class="tags-container">
+              <div
+                v-if="this.uploadersList.length !== 0"
+                class="tags-container"
+              >
                 <div class="tags-type">选择上传人：</div>
                 <div class="tags-row">
-                  <template v-for="(item,index) in uploadersList">
+                  <template v-for="(item, index) in uploadersList">
                     <span
                       v-if="index < 8"
                       @click="selectUploaders(item)"
                       :key="index"
-                    >{{ item.name}}</span>
+                      >{{ item.name }}</span
+                    >
                   </template>
                 </div>
               </div>
@@ -63,7 +83,7 @@
                     placeholder="年份"
                   >
                     <el-option
-                      v-for="(item,index) in yearList"
+                      v-for="(item, index) in yearList"
                       :key="index"
                       :label="item.label"
                       :value="item.value"
@@ -76,7 +96,7 @@
                     placeholder="月份"
                   >
                     <el-option
-                      v-for="(item,index) in monthList"
+                      v-for="(item, index) in monthList"
                       :key="index"
                       :label="item.label"
                       :value="item.value"
@@ -94,13 +114,26 @@
         <!-- 照片内容 -->
         <el-main class="main">
           <template>
-            <div class="photos-item-container">
-              <span class="date-tag">2018年5月4日</span>
+            <div
+              v-for="(item, index) in imgsInfo"
+              :key="index"
+              class="photos-item-container"
+            >
+              <span class="date-tag">{{ item.create_time | formatDate }}</span>
               <div>
-                <span class="photographer">摄影师：鹿久久</span>
+                <span class="photographer">{{
+                  item.user && item.user.nickname
+                }}</span>
                 <div class="photos">
-                  <div v-for="(i,index) in count" class="single-photo" :key="index">
-                    <span v-if="onEdit" :class="['choose-icon','choosed']"></span>
+                  <div
+                    v-for="(i, index) in count"
+                    class="single-photo"
+                    :key="index"
+                  >
+                    <span
+                      v-if="onEdit"
+                      :class="['choose-icon', 'choosed']"
+                    ></span>
                     <img src="../../assets/images/LOGO_03.gif" alt />
                   </div>
                 </div>
@@ -126,32 +159,60 @@
       </el-container>
     </el-container>
     <!-- 返回顶部 -->
-    <el-backtop class="backtop" target=".main" :right="18" :bottom="110" :visibility-height="10">
+    <el-backtop
+      class="backtop"
+      target=".main"
+      :right="18"
+      :bottom="110"
+      :visibility-height="10"
+    >
       <img src="../../assets/images/07_25.png" />
     </el-backtop>
     <!-- 上传图片弹窗 -->
-    <el-dialog title="上传照片" :visible.sync="dialogPhoto" class="dialog-photo">
+    <el-dialog
+      title="上传照片"
+      :visible.sync="dialogPhoto"
+      class="dialog-photo"
+    >
       <span slot="title">
         <span class="upload-title">上传照片</span>
-        <span class="upload-tip">（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span>
+        <span class="upload-tip"
+          >（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span
+        >
       </span>
       <el-container>
         <el-main class="upload-main">
           <div class="upload-photos">
-            <div v-for="(file,index) in files" class="upload-single-photo" :key="index">
+            <div
+              v-for="(file, index) in files"
+              class="upload-single-photo"
+              :key="index"
+            >
               <img v-if="file.blob" :src="file.blob" />
               <!-- 点击开始上传  显示进度条-->
-              <div v-if="file.active || file.progress !== '0.00'" class="extraItem progress">
-                <span class="extraItem progressText">{{file.progress || 0}}%</span>
-                <div class="extraItem activeProgress" :style="{width: file.progress + '%'}"></div>
+              <div
+                v-if="file.active || file.progress !== '0.00'"
+                class="extraItem progress"
+              >
+                <span class="extraItem progressText"
+                  >{{ file.progress || 0 }}%</span
+                >
+                <div
+                  class="extraItem activeProgress"
+                  :style="{ width: file.progress + '%' }"
+                ></div>
               </div>
               <!-- 非上传时显示删除按钮 -->
-              <span v-else class="extraItem delete-btn" @click="$refs.uploader.remove(file)">
+              <span
+                v-else
+                class="extraItem delete-btn"
+                @click="$refs.uploader.remove(file)"
+              >
                 <i class="el-icon-delete"></i>
               </span>
             </div>
             <!-- 当选择多于20张时不显示添加照片按钮 -->
-            <div class="add-photo" v-show="files.length<20">
+            <div class="add-photo" v-show="files.length < 20">
               <img src="../../assets/images/add.png" />
               <file-upload
                 ref="uploader"
@@ -161,7 +222,8 @@
                 :custom-action="customAction"
                 @input-file="inputFile"
                 @input-filter="inputFilter"
-              >添加照片</file-upload>
+                >添加照片</file-upload
+              >
             </div>
           </div>
         </el-main>
@@ -171,13 +233,15 @@
             type="info"
             class="upload-btn start-upload"
             @click="$refs.uploader.active = true"
-          >开始上传</el-button>
+            >开始上传</el-button
+          >
           <el-button
             v-else
             type="info"
             class="upload-btn cancle-upload"
             @click="$refs.uploader.active = false"
-          >取消上传</el-button>
+            >取消上传</el-button
+          >
           <!-- <el-button
             v-if="!startUpload"
             type="info"
@@ -196,7 +260,11 @@
       </el-container>
     </el-dialog>
     <!-- 管理员设置弹窗 -->
-    <el-dialog title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
+    <el-dialog
+      title="管理员设置"
+      :visible.sync="dialogAdmin"
+      class="dialog-admin"
+    >
       <span slot="title">
         <el-button
           :disabled="isAdd"
@@ -204,7 +272,8 @@
           icon="el-icon-plus"
           class="add-admin"
           @click="addUser"
-        >新增</el-button>
+          >新增</el-button
+        >
       </span>
       <el-container>
         <el-main class="admin-main">
@@ -217,21 +286,29 @@
                   v-model="scope.row.department"
                   placeholder="部门"
                 ></el-input>
-                <span v-else>{{scope.row.department}}</span>
+                <span v-else>{{ scope.row.department }}</span>
               </template>
             </el-table-column>
             <!-- 姓名 -->
             <el-table-column label="姓名" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.name" placeholder="姓名"></el-input>
-                <span v-else>{{scope.row.name}}</span>
+                <el-input
+                  v-if="isAdd && scope.row.isNew"
+                  v-model="scope.row.name"
+                  placeholder="姓名"
+                ></el-input>
+                <span v-else>{{ scope.row.name }}</span>
               </template>
             </el-table-column>
             <!-- 职务 -->
             <el-table-column label="职务" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.duty" placeholder="职务"></el-input>
-                <span v-else>{{scope.row.duty}}</span>
+                <el-input
+                  v-if="isAdd && scope.row.isNew"
+                  v-model="scope.row.duty"
+                  placeholder="职务"
+                ></el-input>
+                <span v-else>{{ scope.row.duty }}</span>
               </template>
             </el-table-column>
             <!-- 登陆账号 -->
@@ -242,16 +319,24 @@
                   v-model="scope.row.account"
                   placeholder="登陆账号"
                 ></el-input>
-                <span v-else>{{scope.row.account}}</span>
+                <span v-else>{{ scope.row.account }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="密码状态" width="100" class-name="pw-cell-class">
+            <el-table-column
+              label="密码状态"
+              width="100"
+              class-name="pw-cell-class"
+            >
               <template slot-scope="scope">
-                <span v-if="scope.row.password_status===1">已经自设</span>
+                <span v-if="scope.row.password_status === 1">已经自设</span>
                 <span v-else>初始密码</span>
               </template>
             </el-table-column>
-            <el-table-column label="权限开放" width="100" class-name="role-cell-class">
+            <el-table-column
+              label="权限开放"
+              width="100"
+              class-name="role-cell-class"
+            >
               <template slot-scope="scope">
                 <el-radio-group
                   v-model="scope.row.scope"
@@ -267,14 +352,23 @@
                 </el-radio-group>
               </template>
             </el-table-column>
-            <el-table-column label="重置密码" width="100" class-name="retpw-cell-class">
+            <el-table-column
+              label="重置密码"
+              width="100"
+              class-name="retpw-cell-class"
+            >
               <template slot-scope="scope">
                 <el-button
                   type="warning"
                   size="mini"
-                  :disabled="scope.row.isNew || scope.row.password_status == 0 || scope.row.scope == 1 "
+                  :disabled="
+                    scope.row.isNew ||
+                      scope.row.password_status == 0 ||
+                      scope.row.scope == 1
+                  "
                   @click="handleReset(scope.$index, scope.row)"
-                >立即重置</el-button>
+                  >立即重置</el-button
+                >
               </template>
             </el-table-column>
             <el-table-column label width="100">
@@ -283,14 +377,17 @@
                   v-if="!scope.row.isNew"
                   class="hide-user-btn"
                   @click="handleHidden(scope.$index, scope.row)"
-                >隐藏</span>
+                  >隐藏</span
+                >
               </template>
             </el-table-column>
           </el-table>
         </el-main>
         <el-footer v-show="isAdd" height="100px" class="admin-footer">
           <el-button class="cancel-admin" @click="getUserList">取消</el-button>
-          <el-button type="primary" class="save-admin" @click="saveUser">保存</el-button>
+          <el-button type="primary" class="save-admin" @click="saveUser"
+            >保存</el-button
+          >
         </el-footer>
       </el-container>
     </el-dialog>
@@ -298,8 +395,9 @@
 </template>
 
 <script>
-import headerVue from '../header'
-import fileUpload from 'vue-upload-component'
+import headerVue from "../header";
+import fileUpload from "vue-upload-component";
+import Moment from "moment";
 import {
   queryMark,
   queryAdminMark,
@@ -310,123 +408,130 @@ import {
   updateScope,
   resetPwd,
   hiddenPwd,
-  getImgs,
-} from '../../request/api'
+  getImgs
+} from "../../request/api";
 export default {
-  data () {
+  data() {
     return {
       files: [], // 上传的照片file，最大为20个file
-      dialogAdmin: false,//管理员弹窗显示
-      dialogPhoto: false,//照片上传弹窗显示
+      dialogAdmin: false, //管理员弹窗显示
+      dialogPhoto: false, //照片上传弹窗显示
       count: 20,
       onEdit: false, // 首页照片是编辑状态：可选择提交或者下载
-      inputClassName: '', // 输入班级名称
-      inputTagsSearch: '', // 输入标签搜索
+      inputClassName: "", // 输入班级名称
+      inputTagsSearch: "", // 输入标签搜索
       classList: [], //  左侧班级列表
       tagsList: [], // 标签列表
       uploadersList: [], // 上传人标签列表
-      addUploadDisc: '', // 上传照片中的照片说明
+      addUploadDisc: "", // 上传照片中的照片说明
       startUpload: false, // 开始上传标志
       isAdd: false, // 子账户新增标志
-      tableData: [],// 子账户列表
+      tableData: [], // 子账户列表
+      imgsInfo: [], //点击左侧得到照片渲染所有信息,
+      imgs: [], //渲染的照片信息
       time: {
-        year: '',
-        month: ''
+        year: "",
+        month: ""
       }, // 日期
       yearList: [
         {
-          value: '',
-          label: '年份'
+          value: "",
+          label: "年份"
         },
         {
-          value: '2019',
-          label: '2019'
+          value: "2019",
+          label: "2019"
         },
         {
-          value: '2018',
-          label: '2018'
+          value: "2018",
+          label: "2018"
         },
         {
-          value: '2017',
-          label: '2017'
+          value: "2017",
+          label: "2017"
         },
         {
-          value: '2016',
-          label: '2016'
+          value: "2016",
+          label: "2016"
         },
         {
-          value: '2015',
-          label: '2015'
+          value: "2015",
+          label: "2015"
         }
       ],
       monthList: [
         {
-          value: '',
-          label: '月份'
+          value: "",
+          label: "月份"
         },
         {
-          value: '1月',
-          label: '1月'
+          value: "1月",
+          label: "1月"
         },
         {
-          value: '2月',
-          label: '2月'
+          value: "2月",
+          label: "2月"
         },
         {
-          value: '3月',
-          label: '3月'
+          value: "3月",
+          label: "3月"
         }
       ]
+    };
+  },
+  filters: {
+    formatDate: dateStr => {
+      return Moment(dateStr).format("YYYY年MM月DD日");
     }
   },
   components: { headerVue, fileUpload },
-  created () {
+  created() {
     // 获取班级列表
-    this.getClassList()
+    this.getClassList();
     // 获取标签列表
-    this.getMarkList()
+    this.getMarkList();
     // 获取管理员标签列表
-    this.getAdminMarkList()
+    this.getAdminMarkList();
   },
   methods: {
     // 获取班级列表
-    getClassList () {
+    getClassList() {
       queryClass(null).then(res => {
         if (res) {
-          this.classList = res
+          this.classList = res;
           this.classList.forEach(item => {
-            item.selected = false
-          })
-          this.classList = JSON.parse(JSON.stringify(this.classList))
+            item.selected = false;
+          });
+          this.classList = JSON.parse(JSON.stringify(this.classList));
         }
-      })
+      });
     },
     // 获取标签列表
-    getMarkList () {
+    getMarkList() {
       queryMark({ size: 13, page: 1 }).then(response => {
         if (response.data) {
-          this.tagsList = response.data
+          this.tagsList = response.data;
           this.tagsList.forEach(item => {
-            item.selected = false
-          })
-          this.tagsList = JSON.parse(JSON.stringify(this.tagsList))
+            item.selected = false;
+          });
+          this.tagsList = JSON.parse(JSON.stringify(this.tagsList));
         }
-      })
+      });
     },
     // 获取管理员标签列表
-    getAdminMarkList () {
+    getAdminMarkList() {
       queryAdminMark(null).then(response => {
         if (response) {
-          this.uploadersList = response
+          this.uploadersList = response;
           this.uploadersList.forEach(item => {
-            item.selected = false
-          })
-          this.uploadersList = JSON.parse(JSON.stringify(this.uploadersList))
+            item.selected = false;
+          });
+          this.uploadersList = this.uploadersList.filter(item => !!item.name);
         }
-      })
+      });
     },
     // 班级模糊查询
-    inputClass () {
+    inputClass() {
       if (this.inputClassName.trim() === "") {
         this.getClassList();
       } else {
@@ -437,54 +542,70 @@ export default {
                 message: "查询结果为空!",
                 type: "warning"
               });
-              this.classList = []
-              return
+              this.classList = [];
+              return;
             }
-            this.classList = res
+            this.classList = res;
             this.classList.forEach(item => {
-              item.selected = false
-            })
-            this.classList = JSON.parse(JSON.stringify(this.classList))
+              item.selected = false;
+            });
+            this.classList = JSON.parse(JSON.stringify(this.classList));
           }
-        })
+        });
       }
     },
     //点击班级选中
-    selectClass (id) {
+    selectClass(id) {
       this.classList.forEach(item => {
-        item.selected = false
+        item.selected = false;
         if (id === item.id) {
-          item.selected = true
+          item.selected = true;
         }
-      })
-      getImgs().then(res => {
-
-      })
+      });
+      const body = {
+        id: id,
+        page: 1
+      };
+      getImgs(body).then(res => {
+        this.imgsInfo = res[0].user_class;
+        console.log(this.imgsInfo);
+        // this.imgs = this.imgsInfo.map(item => {
+        //   if (item.user.user_group.length > 0) {
+        //     item.user.user_group.map(it => {
+        //       it.images.contact(it.images);
+        //     });
+        //   }
+        // });
+        // console.log(this.imgs);
+        // console.log(Moment(res[0].create_time).format("YYYY年MM月DD日"));
+      });
     },
     // 标签选择
-    selectTags (item) {
-      this.searchValue(item.name)
+    selectTags(item) {
+      this.searchValue(item.name);
     },
     // 上传人选择
-    selectUploaders (item) {
-      this.searchValue(item.name)
+    selectUploaders(item) {
+      this.searchValue(item.name);
     },
     // 年份选择
-    yearSelect (value) {
-      this.searchValue(value)
+    yearSelect(value) {
+      this.searchValue(value);
     },
     // 月份选择
-    monthSelect (value) {
-      this.searchValue(value)
+    monthSelect(value) {
+      this.searchValue(value);
     },
     // 根据标签填入搜索框的value
-    searchValue (value) {
-      this.inputTagsSearch = this.inputTagsSearch.trim()
-      if (!value) { return }
+    searchValue(value) {
+      this.inputTagsSearch = this.inputTagsSearch.trim();
+      if (!value) {
+        return;
+      }
       if (this.inputTagsSearch.length === 0) {
-        this.inputTagsSearch = value
+        this.inputTagsSearch = value;
       } else {
-        this.inputTagsSearch = this.inputTagsSearch + ' 、' + value
+        this.inputTagsSearch = this.inputTagsSearch + " 、" + value;
       }
     },
 
@@ -495,13 +616,13 @@ export default {
      * @param  Object|undefined   oldFile   只读
      * @return undefined
      */
-    inputFile: function (newFile, oldFile) {
+    inputFile: function(newFile, oldFile) {
       if (newFile && oldFile && !newFile.active && oldFile.active) {
         // 获得相应数据
-        console.log('response', newFile.response)
+        console.log("response", newFile.response);
         if (newFile.xhr) {
           //  获得响应状态码
-          console.log('status', newFile.xhr.status)
+          console.log("status", newFile.xhr.status);
         }
       }
     },
@@ -512,61 +633,61 @@ export default {
      * @param  Function           prevent   阻止回调
      * @return undefined
      */
-    inputFilter: function (newFile, oldFile, prevent) {
+    inputFilter: function(newFile, oldFile, prevent) {
       if (newFile && !oldFile) {
         // 过滤不是图片后缀的文件
         if (!/\.(jpeg|jpe|jpg|gif|png|webp)$/i.test(newFile.name)) {
-          return prevent()
+          return prevent();
         }
       }
       // 创建 blob 字段 用于图片预览
       if (newFile) {
-        newFile.blob = ''
-        let URL = window.URL || window.webkitURL
+        newFile.blob = "";
+        let URL = window.URL || window.webkitURL;
         if (URL && URL.createObjectURL) {
-          newFile.blob = URL.createObjectURL(newFile.file)
+          newFile.blob = URL.createObjectURL(newFile.file);
         }
       }
     },
     // 组件上传照片方法
-    customAction () {
-      console.log(this.files)
+    customAction() {
+      console.log(this.files);
     },
 
     /* 管理员设置弹窗 */
     // 打开管理员设置弹窗
-    tableVisibleAdmin (value) {
-      this.dialogAdmin = value
-      this.getUserList()
+    tableVisibleAdmin(value) {
+      this.dialogAdmin = value;
+      this.getUserList();
     },
     //获取子账户列表
-    getUserList () {
+    getUserList() {
       queryUserList({ size: 99999, page: 1 }).then(response => {
         if (response.data) {
-          this.isAdd = false
-          this.tableData = response.data
+          this.isAdd = false;
+          this.tableData = response.data;
           this.tableData.forEach(item => {
-            item.isNew = false
-          })
-          this.tableData = JSON.parse(JSON.stringify(this.tableData))
+            item.isNew = false;
+          });
+          this.tableData = JSON.parse(JSON.stringify(this.tableData));
         }
-      })
+      });
     },
     // 管理员设置新增
-    addUser () {
-      this.isAdd = true
+    addUser() {
+      this.isAdd = true;
       this.tableData.push({
-        account: '',
-        name: '',
-        duty: '',
-        department: '',
-        scope: '',
+        account: "",
+        name: "",
+        duty: "",
+        department: "",
+        scope: "",
         isNew: true
-      })
+      });
     },
     // 保存子账户
-    saveUser () {
-      let newUser = {}
+    saveUser() {
+      let newUser = {};
       this.tableData.forEach(item => {
         if (item.isNew) {
           newUser = {
@@ -574,91 +695,89 @@ export default {
             name: item.name,
             duty: item.duty,
             scope: item.scope,
-            department: item.department,
-          }
+            department: item.department
+          };
         }
-      })
+      });
       addTheUser(newUser).then(response => {
         if (response.code === 1) {
           this.$message({
             message: response.msg,
             type: "success"
           });
-          this.getUserList()
+          this.getUserList();
         } else {
           this.$message({
             message: response.msg,
             type: "error"
           });
         }
-      })
+      });
     },
     //权限切换
-    scopeChange (row) {
-      console.log(row)
+    scopeChange(row) {
+      console.log(row);
       const body = {
         id: row.id,
         scope: row.scope
-      }
-      updateScope(body)
-        .then(res => {
-          if (res.code === 1) {
-            this.$message({
-              message: res.msg,
-              type: 'success'
-            })
-            this.getUserList();
-          } else {
-            this.$message({
-              message: res.msg,
-              type: 'error'
-            })
-          }
-        })
-    },
-    // 重置密码
-    handleReset (index, row) {
-      const body = {
-        aid: row.id
-      }
-      resetPwd(body)
-        .then(res => {
-          if (res.code === 1) {
-            this.$message({
-              message: res.msg,
-              type: 'success'
-            })
-            this.getUserList();
-          } else {
-            this.$message({
-              message: res.msg,
-              type: 'error'
-            })
-          }
-        })
-    },
-    // 隐藏按钮
-    handleHidden (index, row) {
-      const body = {
-        id: row.id
-      }
-      hiddenPwd(body).then(res => {
+      };
+      updateScope(body).then(res => {
         if (res.code === 1) {
           this.$message({
             message: res.msg,
-            type: 'success'
-          })
+            type: "success"
+          });
           this.getUserList();
         } else {
           this.$message({
             message: res.msg,
-            type: 'error'
-          })
+            type: "error"
+          });
         }
-      })
+      });
     },
+    // 重置密码
+    handleReset(index, row) {
+      const body = {
+        aid: row.id
+      };
+      resetPwd(body).then(res => {
+        if (res.code === 1) {
+          this.$message({
+            message: res.msg,
+            type: "success"
+          });
+          this.getUserList();
+        } else {
+          this.$message({
+            message: res.msg,
+            type: "error"
+          });
+        }
+      });
+    },
+    // 隐藏按钮
+    handleHidden(index, row) {
+      const body = {
+        id: row.id
+      };
+      hiddenPwd(body).then(res => {
+        if (res.code === 1) {
+          this.$message({
+            message: res.msg,
+            type: "success"
+          });
+          this.getUserList();
+        } else {
+          this.$message({
+            message: res.msg,
+            type: "error"
+          });
+        }
+      });
+    }
   }
-}
+};
 </script>
 
 <style scoped>
