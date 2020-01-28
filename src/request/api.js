@@ -25,3 +25,7 @@ export const resetPwd = p => post("/api/v1/admin/reset_pwd", p);
 export const hiddenPwd = p => post("/api/v1/admin/hidden", p);
 //点击班级获取照片
 export const getImgs = p => get("/api/v1/management/img_list", p);
+//查看七牛云token
+export const qiniuToken = p => get("/api/v1/upload/get_token", p);
+//上传到七牛云
+export const loadQiniu = (url, p) => get(url, p);

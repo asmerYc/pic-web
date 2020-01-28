@@ -215,6 +215,7 @@
             <div class="add-photo" v-show="files.length < 20">
               <img src="../../assets/images/add.png" />
               <file-upload
+                accept="image/*"
                 ref="uploader"
                 v-model="files"
                 :multiple="true"
@@ -397,6 +398,7 @@
 <script>
 import headerVue from "../header";
 import fileUpload from "vue-upload-component";
+import * as qiniu from "qiniu-js";
 import Moment from "moment";
 import {
   queryMark,
@@ -408,7 +410,8 @@ import {
   updateScope,
   resetPwd,
   hiddenPwd,
-  getImgs
+  getImgs,
+  qiniuToken
 } from "../../request/api";
 export default {
   data() {
@@ -428,7 +431,9 @@ export default {
       isAdd: false, // 子账户新增标志
       tableData: [], // 子账户列表
       imgsInfo: [], //点击左侧得到照片渲染所有信息,
-      imgs: [], //渲染的照片信息
+      imgs: [], //渲染的照片信息,
+      qiToken: "",
+      domain: "",
       time: {
         year: "",
         month: ""
@@ -492,6 +497,8 @@ export default {
     this.getMarkList();
     // 获取管理员标签列表
     this.getAdminMarkList();
+    //获取七牛云token
+    this.getQiNiutoken();
   },
   methods: {
     // 获取班级列表
@@ -649,9 +656,64 @@ export default {
       }
     },
     // 组件上传照片方法
-    customAction() {
+    async customAction(file, component) {
       console.log(this.files);
+      const files = this.files;
+      const token = this.qiToken; //从服务器拿的并存在本地data里
+      const putExtra = {
+        fname: "",
+        params: {},
+        mimeType: []
+      };
+      const config = {
+        useCdnDomain: true //使用cdn加速
+      };
+      const observable = qiniu.upload(files, null, token, putExtra, config);
+      console.log(observable);
+      observable.subscribe({
+        next: result => {
+          // 主要用来展示进度
+          //   console.warn(result);
+          console.log(result);
+        },
+        error: () => {
+          this.$message("上传图片失败");
+        },
+        complete: res => {
+          console.log(res);
+        }
+      });
+      // return await component.uploadPut(file)
+      return await component.uploadHtml4(file);
     },
+    // customAction() {
+    //   const file = this.files;
+    //   const key = file[0].name;
+    //   const token = this.qiToken; //从服务器拿的并存在本地data里
+    //   const putExtra = {
+    //     fname: "",
+    //     params: {},
+    //     mimeType: ["image/png", "image/jpeg", "image/gif"]
+    //   };
+    //   const config = {
+    //     useCdnDomain: true //使用cdn加速
+    //   };
+    //   const observable = qiniu.upload(file, key, token, putExtra, config);
+    //   console.log(observable);
+    //   observable.subscribe({
+    //     next: result => {
+    //       // 主要用来展示进度
+    //       //   console.warn(result);
+    //       console.log(result);
+    //     },
+    //     error: () => {
+    //       this.$message("上传图片失败");
+    //     },
+    //     complete: res => {
+    //       console.log(res.key);
+    //     }
+    //   });
+    // },
 
     /* 管理员设置弹窗 */
     // 打开管理员设置弹窗
@@ -772,6 +834,15 @@ export default {
             message: res.msg,
             type: "error"
           });
+        }
+      });
+    },
+    //查询七牛云token
+    getQiNiutoken() {
+      qiniuToken(null).then(res => {
+        if (res) {
+          this.qiToken = res.uptoken;
+          this.domain = res.domain;
         }
       });
     }
@@ -979,7 +1050,7 @@ export default {
   margin-top: 10px;
 }
 .single-photo {
-  flex:1 1 auto;
+  flex: 1 1 auto;
   position: relative;
   width: 100px;
   height: 100px;
@@ -1061,7 +1132,7 @@ export default {
   flex-wrap: wrap;
 }
 .dialog-photo .upload-single-photo {
-  flex:1 1 auto;
+  flex: 1 1 auto;
   position: relative;
   width: 180px;
   height: 180px;
@@ -1166,7 +1237,7 @@ export default {
   align-items: center;
   width: 180px;
   height: 180px;
-  margin-right:20px;
+  margin-right: 20px;
   background-color: #e8e8e8;
   border: 1px solid #f1f1f1;
 }
