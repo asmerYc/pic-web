@@ -27,5 +27,7 @@ export const hiddenPwd = p => post("/api/v1/admin/hidden", p);
 export const getImgs = p => get("/api/v1/management/img_list", p);
 //查看七牛云token
 export const qiniuToken = p => get("/api/v1/upload/get_token", p);
-//上传到七牛云
-export const loadQiniu = (url, p) => get(url, p);
+//图片上传
+export const upLoadImg = p => post("/api/v1/management/up_img", p);
+//提交照片
+export const submitImg = p => post("/api/v1/management/sub_img", p);

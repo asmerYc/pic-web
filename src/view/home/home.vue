@@ -12,7 +12,7 @@
         >
           <i slot="suffix" class="el-input__icon el-icon-search"></i>
         </el-input>
-        <div class="search-title">学校图片</div>
+        <div class="search-title" @click="viewSclImgs">学校图片</div>
         <div class="class-list">
           <ul class="infinite-list" v-infinite-scroll style="overflow:auto">
             <li
@@ -23,7 +23,7 @@
                 item.selected ? 'active' : null
               ]"
               :key="index"
-              @click="selectClass(item.id)"
+              @click="selectClass(item)"
             >
               {{ item.name }}
             </li>
@@ -61,8 +61,8 @@
                 v-if="this.uploadersList.length !== 0"
                 class="tags-container"
               >
-                <div class="tags-type">选择上传人：</div>
-                <div class="tags-row">
+                <div class="tags-type" v-if="isShow">选择上传人：</div>
+                <div class="tags-row" v-if="isShow">
                   <template v-for="(item, index) in uploadersList">
                     <span
                       v-if="index < 8"
@@ -126,15 +126,17 @@
                 }}</span>
                 <div class="photos">
                   <div
-                    v-for="(i, index) in count"
+                    @click="changeImg(i)"
+                    v-for="(i, index) in ceshiList"
                     class="single-photo"
                     :key="index"
                   >
                     <span
                       v-if="onEdit"
-                      :class="['choose-icon', 'choosed']"
+                      :class="[{ choosed: i.isChoosed }, 'choose-icon']"
                     ></span>
-                    <img src="../../assets/images/LOGO_03.gif" alt />
+                    <!-- <img src="../../assets/images/LOGO_03.gif" alt /> -->
+                    <img :src="i.img_url" alt />
                   </div>
                 </div>
               </div>
@@ -143,11 +145,11 @@
         </el-main>
         <el-footer class="footer" height="56px">
           <div class="footer-left">
-            <el-button v-if="onEdit" @click="onEdit = !onEdit">取消</el-button>
+            <el-button v-if="onEdit" @click="cancleCircle">取消</el-button>
           </div>
           <div v-if="onEdit" class="footer-right">
-            <el-button>提交</el-button>
-            <el-button>下载</el-button>
+            <el-button @click="submit">提交</el-button>
+            <el-button @click="download">下载</el-button>
           </div>
           <div v-else class="choose-photo">
             <el-button @click="onEdit = !onEdit">
@@ -233,14 +235,14 @@
             v-if="!$refs.uploader || !$refs.uploader.active"
             type="info"
             class="upload-btn start-upload"
-            @click="$refs.uploader.active = true"
+            @click="submitUpload"
             >开始上传</el-button
           >
           <el-button
             v-else
             type="info"
             class="upload-btn cancle-upload"
-            @click="$refs.uploader.active = false"
+            @click="cancleUpload"
             >取消上传</el-button
           >
           <!-- <el-button
@@ -400,6 +402,7 @@ import headerVue from "../header";
 import fileUpload from "vue-upload-component";
 import * as qiniu from "qiniu-js";
 import Moment from "moment";
+import axios from "axios";
 import {
   queryMark,
   queryAdminMark,
@@ -411,7 +414,9 @@ import {
   resetPwd,
   hiddenPwd,
   getImgs,
-  qiniuToken
+  qiniuToken,
+  upLoadImg,
+  submitImg
 } from "../../request/api";
 export default {
   data() {
@@ -434,6 +439,10 @@ export default {
       imgs: [], //渲染的照片信息,
       qiToken: "",
       domain: "",
+      selectedClass: "",
+      isShow: false, //是否显示上传人
+      ceshiList: [],
+      isChoosed: false,
       time: {
         year: "",
         month: ""
@@ -562,19 +571,32 @@ export default {
       }
     },
     //点击班级选中
-    selectClass(id) {
+    selectClass(select) {
+      this.isShow = false;
+      console.log(select);
+      this.selectedClass = select;
       this.classList.forEach(item => {
         item.selected = false;
-        if (id === item.id) {
+        if (select.id === item.id) {
           item.selected = true;
         }
       });
       const body = {
-        id: id
+        id: select.id
       };
       getImgs(body).then(res => {
-        this.imgsInfo = res[0].user_class;
-        console.log(this.imgsInfo);
+        console.log(res);
+        // console.log(res[0].user_class);
+        this.imgsInfo = res;
+        // this.imgsInfo = res[0].user_class;
+        this.ceshiList = res[0].user.user_group[0].images.map(item => {
+          return {
+            ...item,
+            isChoosed: false
+          };
+        });
+
+        console.log(this.ceshiList);
         // this.imgs = this.imgsInfo.map(item => {
         //   if (item.user.user_group.length > 0) {
         //     item.user.user_group.map(it => {
@@ -625,12 +647,21 @@ export default {
     inputFile: function(newFile, oldFile) {
       if (newFile && oldFile && !newFile.active && oldFile.active) {
         // 获得相应数据
-        console.log("response", newFile.response);
+        // console.log("response", newFile.response);
         if (newFile.xhr) {
           //  获得响应状态码
-          console.log("status", newFile.xhr.status);
+          //   console.log("status", newFile.xhr.status);
         }
       }
+      // 自动上传
+      //   if (
+      //     Boolean(newFile) !== Boolean(oldFile) ||
+      //     oldFile.error !== newFile.error
+      //   ) {
+      //     if (!this.$refs.uploader.active) {
+      //       this.$refs.uploader.active = true;
+      //     }
+      //   }
     },
     /**
      * Pretreatment
@@ -657,8 +688,7 @@ export default {
     },
     // 组件上传照片方法
     async customAction(file, component) {
-      console.log(this.files);
-      const files = this.files;
+      const key = file.name;
       const token = this.qiToken; //从服务器拿的并存在本地data里
       const putExtra = {
         fname: "",
@@ -668,52 +698,23 @@ export default {
       const config = {
         useCdnDomain: true //使用cdn加速
       };
-      const observable = qiniu.upload(files, null, token, putExtra, config);
-      console.log(observable);
+      const observable = qiniu.upload(file.file, key, token, putExtra, config);
+      //   console.log(observable);
       observable.subscribe({
         next: result => {
           // 主要用来展示进度
-          //   console.warn(result);
           console.log(result);
         },
         error: () => {
           this.$message("上传图片失败");
         },
         complete: res => {
-          console.log(res);
+          //   console.log(res);
         }
       });
       // return await component.uploadPut(file)
       return await component.uploadHtml4(file);
     },
-    // customAction() {
-    //   const file = this.files;
-    //   const key = file[0].name;
-    //   const token = this.qiToken; //从服务器拿的并存在本地data里
-    //   const putExtra = {
-    //     fname: "",
-    //     params: {},
-    //     mimeType: ["image/png", "image/jpeg", "image/gif"]
-    //   };
-    //   const config = {
-    //     useCdnDomain: true //使用cdn加速
-    //   };
-    //   const observable = qiniu.upload(file, key, token, putExtra, config);
-    //   console.log(observable);
-    //   observable.subscribe({
-    //     next: result => {
-    //       // 主要用来展示进度
-    //       //   console.warn(result);
-    //       console.log(result);
-    //     },
-    //     error: () => {
-    //       this.$message("上传图片失败");
-    //     },
-    //     complete: res => {
-    //       console.log(res.key);
-    //     }
-    //   });
-    // },
 
     /* 管理员设置弹窗 */
     // 打开管理员设置弹窗
@@ -777,7 +778,7 @@ export default {
     },
     //权限切换
     scopeChange(row) {
-      console.log(row);
+      //   console.log(row);
       const body = {
         id: row.id,
         scope: row.scope
@@ -845,6 +846,114 @@ export default {
           this.domain = res.domain;
         }
       });
+    },
+    //上传图片
+    submitUpload() {
+      if (!this.addUploadDisc) {
+        this.$message({
+          message: "请输入描述信息之后再进行上传操作！",
+          type: "warning"
+        });
+        return;
+      }
+      this.$refs.uploader.active = true;
+      const imgUrls = this.files.map(item => {
+        return `${this.domain}/${item.name}`;
+      });
+      console.log(imgUrls);
+      const body = {
+        img: imgUrls,
+        description: this.addUploadDisc
+      };
+      upLoadImg(body).then(res => {
+        if (res.code === 1) {
+          this.$message({
+            message: res.msg,
+            type: "success"
+          });
+          this.addUploadDisc = "";
+          this.files = [];
+        } else {
+          this.$message({
+            message: res.msg,
+            type: "error"
+          });
+        }
+      });
+    },
+    cancleUpload() {
+      this.$refs.uploader.active = false;
+    },
+    //查看学校图片
+    viewSclImgs() {
+      this.selectedClass.selected = false;
+      this.isShow = true;
+    },
+
+    //选择图片
+    changeImg(item) {
+      if (!this.onEdit) {
+        return;
+      }
+      console.log(item);
+      item.isChoosed = !item.isChoosed;
+    },
+    cancleCircle() {
+      this.onEdit = !this.onEdit;
+      this.ceshiList.forEach(item => (item.isChoosed = false));
+    },
+    //下载
+    download() {
+      const selectList = this.ceshiList.filter(item => item.isChoosed);
+      console.log(selectList);
+      selectList.forEach(item => {
+        if (item.img_url) {
+          //   var alink = document.createElement("a");
+          //   alink.href = item.img_url;
+          //   alink.download = "pic"; //图片名
+          //   alink.click();
+          let image = new Image();
+          image.setAttribute("crossOrigin", "anonymous");
+          image.src = item.img_url;
+          let names = item.img_url.split("/");
+          let name = names[names.length - 1];
+          image.onload = () => {
+            let canvas = document.createElement("canvas");
+            canvas.width = image.width;
+            canvas.height = image.height;
+            let ctx = canvas.getContext("2d");
+            ctx.drawImage(image, 0, 0, image.width, image.height);
+            canvas.toBlob(blob => {
+              let url = URL.createObjectURL(blob);
+              this.clickDownload(url, name);
+              // 用完释放URL对象
+              URL.revokeObjectURL(url);
+            });
+          };
+        }
+      });
+    },
+    clickDownload(href, name) {
+      let eleLink = document.createElement("a");
+      eleLink.download = name;
+      eleLink.href = href;
+      eleLink.click();
+      eleLink.remove();
+    },
+    //提交
+    submit() {
+      const selectList = this.ceshiList.filter(item => item.isChoosed);
+      const ids = selectList.map(item => item.id);
+      const body = {
+        img: ids
+      };
+      submitImg(body).then(res => {
+        this.$message({
+          type: "success",
+          message: "提交成功"
+        });
+        this.ceshiList.forEach(item => (item.isChoosed = false));
+      });
     }
   }
 };
@@ -881,6 +990,7 @@ export default {
   text-align: center;
   color: white;
   font-size: 18px;
+  cursor: pointer;
   background-image: url("../../assets/images/05_14.png");
 }
 .search-title::before {
@@ -1076,9 +1186,11 @@ export default {
   right: 5px;
   background-image: url("../../assets/images/选择2_16.png");
   background-repeat: no-repeat;
+  z-index: 99;
 }
 .single-photo .choose-icon.choosed {
   background-image: url("../../assets/images/选择_14.png");
+  z-index: 99;
 }
 /* 底部按钮 */
 .footer {
