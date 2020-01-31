@@ -80,10 +80,7 @@ img {
 
 /* 模态框 */
 .el-dialog {
-  width: 74%;
   height: 74%;
-  min-width: 600px;
-  max-width: 1420px;
   min-height: 500px;
   max-height: 742px;
   border-radius: 5px;
@@ -102,6 +99,31 @@ img {
 }
 
 /* 上传照片模态框 */
+@media only screen and (min-width: 1600px){
+    .dialog-photo .el-dialog {
+        width:1420px !important;
+    }
+}
+@media only screen and (min-width: 1400px) and (max-width: 1600px) {
+    .dialog-photo .el-dialog {
+        width:1220px !important;
+    }
+}
+@media only screen and (min-width: 1100px) and (max-width: 1400px) {
+    .dialog-photo .el-dialog {
+        width:1020px !important;
+    }
+}
+@media only screen and (min-width: 900px) and (max-width: 1100px) {
+    .dialog-photo .el-dialog {
+        width:820px !important;
+    }
+}
+@media only screen and (max-width: 900px) {
+    .dialog-photo .el-dialog {
+        width:620px !important;
+    }
+}
 .dialog-photo .el-dialog__header {
   padding: 10px 30px;
   background-color: #f1f1f1;
@@ -123,12 +145,8 @@ img {
 /* 管理员设置弹窗 */
 .dialog-admin .el-dialog {
   width: 74%;
-  height: 74%;
   min-width: 600px;
   max-width: 950px;
-  min-height: 500px;
-  max-height: 742px;
-  border-radius: 5px;
 }
 
 .dialog-admin .el-dialog__header {

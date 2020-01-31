@@ -24,9 +24,7 @@
               ]"
               :key="index"
               @click="selectClass(item)"
-            >
-              {{ item.name }}
-            </li>
+            >{{ item.name }}</li>
           </ul>
         </div>
       </el-aside>
@@ -35,32 +33,23 @@
         <!-- 头部标签 -->
         <el-header class="header" height="180px">
           <div>
-            <el-input
-              class="tag-search"
-              v-model="inputTagsSearch"
-              placeholder="请输入内容"
-            >
-              <el-button
-                class="tag-search-btn"
-                slot="append"
-                icon="el-icon-search"
-              ></el-button>
+            <el-input class="tag-search" v-model="inputTagsSearch" placeholder="请输入内容">
+              <el-button class="tag-search-btn" slot="append" icon="el-icon-search"></el-button>
             </el-input>
             <div>
               <div v-if="this.tagsList.length !== 0" class="tags-container">
                 <div class="tags-type">选择标签：</div>
                 <div class="tags-row">
                   <template v-for="(item, index) in tagsList">
-                    <span @click="selectTags(item)" :key="index">{{
+                    <span @click="selectTags(item)" :key="index">
+                      {{
                       item.name
-                    }}</span>
+                      }}
+                    </span>
                   </template>
                 </div>
               </div>
-              <div
-                v-if="this.uploadersList.length !== 0"
-                class="tags-container"
-              >
+              <div v-if="this.uploadersList.length !== 0" class="tags-container">
                 <div class="tags-type" v-if="isShow">选择上传人：</div>
                 <div class="tags-row" v-if="isShow">
                   <template v-for="(item, index) in uploadersList">
@@ -68,8 +57,7 @@
                       v-if="index < 8"
                       @click="selectUploaders(item)"
                       :key="index"
-                      >{{ item.name }}</span
-                    >
+                    >{{ item.name }}</span>
                   </template>
                 </div>
               </div>
@@ -114,29 +102,26 @@
         <!-- 照片内容 -->
         <el-main class="main">
           <template>
-            <div
-              v-for="(item, index) in imgsInfo"
-              :key="index"
-              class="photos-item-container"
-            >
-              <span class="date-tag">{{ item.create_time | formatDate }}</span>
+            <div v-for="(item, index) in imgsInfo" :key="index" class="photos-item-container">
+              <span v-if="item.create_time" class="date-tag">{{ item.create_time | formatDate }}</span>
               <div>
-                <span class="photographer">{{
+                <span v-if="item.user && item.user.nickname" class="photographer">
+                  {{
                   item.user && item.user.nickname
-                }}</span>
-                <div class="photos">
-                  <div
-                    @click="changeImg(i)"
-                    v-for="(i, index) in ceshiList"
-                    class="single-photo"
-                    :key="index"
-                  >
-                    <span
-                      v-if="onEdit"
-                      :class="[{ choosed: i.isChoosed }, 'choose-icon']"
-                    ></span>
-                    <!-- <img src="../../assets/images/LOGO_03.gif" alt /> -->
-                    <img :src="i.img_url" alt />
+                  }}
+                </span>
+                <div class="scroll-photos">
+                  <div class="photos">
+                    <div
+                      @click="changeImg(i)"
+                      v-for="(i, index) in ceshiList"
+                      class="single-photo"
+                      :key="index"
+                    >
+                      <span v-if="onEdit" :class="[{ choosed: i.isChoosed }, 'choose-icon']"></span>
+                      <!-- <img src="../../assets/images/LOGO_03.gif" alt /> -->
+                      <img :src="i.img_url" alt />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -161,55 +146,27 @@
       </el-container>
     </el-container>
     <!-- 返回顶部 -->
-    <el-backtop
-      class="backtop"
-      target=".main"
-      :right="18"
-      :bottom="110"
-      :visibility-height="10"
-    >
+    <el-backtop class="backtop" target=".main" :right="18" :bottom="110" :visibility-height="10">
       <img src="../../assets/images/07_25.png" />
     </el-backtop>
     <!-- 上传图片弹窗 -->
-    <el-dialog
-      title="上传照片"
-      :visible.sync="dialogPhoto"
-      class="dialog-photo"
-    >
+    <el-dialog title="上传照片" :visible.sync="dialogPhoto" class="dialog-photo">
       <span slot="title">
         <span class="upload-title">上传照片</span>
-        <span class="upload-tip"
-          >（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span
-        >
+        <span class="upload-tip">（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span>
       </span>
       <el-container>
         <el-main class="upload-main">
           <div class="upload-photos">
-            <div
-              v-for="(file, index) in files"
-              class="upload-single-photo"
-              :key="index"
-            >
+            <div v-for="(file, index) in files" class="upload-single-photo" :key="index">
               <img v-if="file.blob" :src="file.blob" />
               <!-- 点击开始上传  显示进度条-->
-              <div
-                v-if="file.active || file.progress !== '0.00'"
-                class="extraItem progress"
-              >
-                <span class="extraItem progressText"
-                  >{{ file.progress || 0 }}%</span
-                >
-                <div
-                  class="extraItem activeProgress"
-                  :style="{ width: file.progress + '%' }"
-                ></div>
+              <div v-if="file.active || file.progress !== '0.00'" class="extraItem progress">
+                <span class="extraItem progressText">{{ file.progress || 0 }}%</span>
+                <div class="extraItem activeProgress" :style="{ width: file.progress + '%' }"></div>
               </div>
               <!-- 非上传时显示删除按钮 -->
-              <span
-                v-else
-                class="extraItem delete-btn"
-                @click="$refs.uploader.remove(file)"
-              >
+              <span v-else class="extraItem delete-btn" @click="$refs.uploader.remove(file)">
                 <i class="el-icon-delete"></i>
               </span>
             </div>
@@ -225,8 +182,7 @@
                 :custom-action="customAction"
                 @input-file="inputFile"
                 @input-filter="inputFilter"
-                >添加照片</file-upload
-              >
+              >添加照片</file-upload>
             </div>
           </div>
         </el-main>
@@ -236,15 +192,8 @@
             type="info"
             class="upload-btn start-upload"
             @click="submitUpload"
-            >开始上传</el-button
-          >
-          <el-button
-            v-else
-            type="info"
-            class="upload-btn cancle-upload"
-            @click="cancleUpload"
-            >取消上传</el-button
-          >
+          >开始上传</el-button>
+          <el-button v-else type="info" class="upload-btn cancle-upload" @click="cancleUpload">取消上传</el-button>
           <!-- <el-button
             v-if="!startUpload"
             type="info"
@@ -263,11 +212,7 @@
       </el-container>
     </el-dialog>
     <!-- 管理员设置弹窗 -->
-    <el-dialog
-      title="管理员设置"
-      :visible.sync="dialogAdmin"
-      class="dialog-admin"
-    >
+    <el-dialog title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
       <span slot="title">
         <el-button
           :disabled="isAdd"
@@ -275,8 +220,7 @@
           icon="el-icon-plus"
           class="add-admin"
           @click="addUser"
-          >新增</el-button
-        >
+        >新增</el-button>
       </span>
       <el-container>
         <el-main class="admin-main">
@@ -295,22 +239,14 @@
             <!-- 姓名 -->
             <el-table-column label="姓名" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input
-                  v-if="isAdd && scope.row.isNew"
-                  v-model="scope.row.name"
-                  placeholder="姓名"
-                ></el-input>
+                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.name" placeholder="姓名"></el-input>
                 <span v-else>{{ scope.row.name }}</span>
               </template>
             </el-table-column>
             <!-- 职务 -->
             <el-table-column label="职务" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input
-                  v-if="isAdd && scope.row.isNew"
-                  v-model="scope.row.duty"
-                  placeholder="职务"
-                ></el-input>
+                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.duty" placeholder="职务"></el-input>
                 <span v-else>{{ scope.row.duty }}</span>
               </template>
             </el-table-column>
@@ -325,21 +261,13 @@
                 <span v-else>{{ scope.row.account }}</span>
               </template>
             </el-table-column>
-            <el-table-column
-              label="密码状态"
-              width="100"
-              class-name="pw-cell-class"
-            >
+            <el-table-column label="密码状态" width="100" class-name="pw-cell-class">
               <template slot-scope="scope">
                 <span v-if="scope.row.password_status === 1">已经自设</span>
                 <span v-else>初始密码</span>
               </template>
             </el-table-column>
-            <el-table-column
-              label="权限开放"
-              width="100"
-              class-name="role-cell-class"
-            >
+            <el-table-column label="权限开放" width="100" class-name="role-cell-class">
               <template slot-scope="scope">
                 <el-radio-group
                   v-model="scope.row.scope"
@@ -355,11 +283,7 @@
                 </el-radio-group>
               </template>
             </el-table-column>
-            <el-table-column
-              label="重置密码"
-              width="100"
-              class-name="retpw-cell-class"
-            >
+            <el-table-column label="重置密码" width="100" class-name="retpw-cell-class">
               <template slot-scope="scope">
                 <el-button
                   type="warning"
@@ -370,8 +294,7 @@
                       scope.row.scope == 1
                   "
                   @click="handleReset(scope.$index, scope.row)"
-                  >立即重置</el-button
-                >
+                >立即重置</el-button>
               </template>
             </el-table-column>
             <el-table-column label width="100">
@@ -380,17 +303,14 @@
                   v-if="!scope.row.isNew"
                   class="hide-user-btn"
                   @click="handleHidden(scope.$index, scope.row)"
-                  >隐藏</span
-                >
+                >隐藏</span>
               </template>
             </el-table-column>
           </el-table>
         </el-main>
         <el-footer v-show="isAdd" height="100px" class="admin-footer">
           <el-button class="cancel-admin" @click="getUserList">取消</el-button>
-          <el-button type="primary" class="save-admin" @click="saveUser"
-            >保存</el-button
-          >
+          <el-button type="primary" class="save-admin" @click="saveUser">保存</el-button>
         </el-footer>
       </el-container>
     </el-dialog>
@@ -419,7 +339,7 @@ import {
   submitImg
 } from "../../request/api";
 export default {
-  data() {
+  data () {
     return {
       files: [], // 上传的照片file，最大为20个file
       dialogAdmin: false, //管理员弹窗显示
@@ -499,7 +419,7 @@ export default {
     }
   },
   components: { headerVue, fileUpload },
-  created() {
+  created () {
     // 获取班级列表
     this.getClassList();
     // 获取标签列表
@@ -511,7 +431,7 @@ export default {
   },
   methods: {
     // 获取班级列表
-    getClassList() {
+    getClassList () {
       queryClass(null).then(res => {
         if (res) {
           this.classList = res;
@@ -523,7 +443,7 @@ export default {
       });
     },
     // 获取标签列表
-    getMarkList() {
+    getMarkList () {
       queryMark({ size: 13, page: 1 }).then(response => {
         if (response.data) {
           this.tagsList = response.data;
@@ -535,7 +455,7 @@ export default {
       });
     },
     // 获取管理员标签列表
-    getAdminMarkList() {
+    getAdminMarkList () {
       queryAdminMark(null).then(response => {
         if (response) {
           this.uploadersList = response;
@@ -547,7 +467,7 @@ export default {
       });
     },
     // 班级模糊查询
-    inputClass() {
+    inputClass () {
       if (this.inputClassName.trim() === "") {
         this.getClassList();
       } else {
@@ -571,7 +491,7 @@ export default {
       }
     },
     //点击班级选中
-    selectClass(select) {
+    selectClass (select) {
       this.isShow = false;
       console.log(select);
       this.selectedClass = select;
@@ -609,23 +529,23 @@ export default {
       });
     },
     // 标签选择
-    selectTags(item) {
+    selectTags (item) {
       this.searchValue(item.name);
     },
     // 上传人选择
-    selectUploaders(item) {
+    selectUploaders (item) {
       this.searchValue(item.name);
     },
     // 年份选择
-    yearSelect(value) {
+    yearSelect (value) {
       this.searchValue(value);
     },
     // 月份选择
-    monthSelect(value) {
+    monthSelect (value) {
       this.searchValue(value);
     },
     // 根据标签填入搜索框的value
-    searchValue(value) {
+    searchValue (value) {
       this.inputTagsSearch = this.inputTagsSearch.trim();
       if (!value) {
         return;
@@ -644,7 +564,7 @@ export default {
      * @param  Object|undefined   oldFile   只读
      * @return undefined
      */
-    inputFile: function(newFile, oldFile) {
+    inputFile: function (newFile, oldFile) {
       if (newFile && oldFile && !newFile.active && oldFile.active) {
         // 获得相应数据
         // console.log("response", newFile.response);
@@ -670,7 +590,7 @@ export default {
      * @param  Function           prevent   阻止回调
      * @return undefined
      */
-    inputFilter: function(newFile, oldFile, prevent) {
+    inputFilter: function (newFile, oldFile, prevent) {
       if (newFile && !oldFile) {
         // 过滤不是图片后缀的文件
         if (!/\.(jpeg|jpe|jpg|gif|png|webp)$/i.test(newFile.name)) {
@@ -687,7 +607,7 @@ export default {
       }
     },
     // 组件上传照片方法
-    async customAction(file, component) {
+    async customAction (file, component) {
       const key = file.name;
       const token = this.qiToken; //从服务器拿的并存在本地data里
       const putExtra = {
@@ -718,12 +638,12 @@ export default {
 
     /* 管理员设置弹窗 */
     // 打开管理员设置弹窗
-    tableVisibleAdmin(value) {
+    tableVisibleAdmin (value) {
       this.dialogAdmin = value;
       this.getUserList();
     },
     //获取子账户列表
-    getUserList() {
+    getUserList () {
       queryUserList({ size: 99999, page: 1 }).then(response => {
         if (response.data) {
           this.isAdd = false;
@@ -736,7 +656,7 @@ export default {
       });
     },
     // 管理员设置新增
-    addUser() {
+    addUser () {
       this.isAdd = true;
       this.tableData.push({
         account: "",
@@ -748,7 +668,7 @@ export default {
       });
     },
     // 保存子账户
-    saveUser() {
+    saveUser () {
       let newUser = {};
       this.tableData.forEach(item => {
         if (item.isNew) {
@@ -777,7 +697,7 @@ export default {
       });
     },
     //权限切换
-    scopeChange(row) {
+    scopeChange (row) {
       //   console.log(row);
       const body = {
         id: row.id,
@@ -799,7 +719,7 @@ export default {
       });
     },
     // 重置密码
-    handleReset(index, row) {
+    handleReset (index, row) {
       const body = {
         aid: row.id
       };
@@ -819,7 +739,7 @@ export default {
       });
     },
     // 隐藏按钮
-    handleHidden(index, row) {
+    handleHidden (index, row) {
       const body = {
         id: row.id
       };
@@ -839,7 +759,7 @@ export default {
       });
     },
     //查询七牛云token
-    getQiNiutoken() {
+    getQiNiutoken () {
       qiniuToken(null).then(res => {
         if (res) {
           this.qiToken = res.uptoken;
@@ -848,7 +768,7 @@ export default {
       });
     },
     //上传图片
-    submitUpload() {
+    submitUpload () {
       if (!this.addUploadDisc) {
         this.$message({
           message: "请输入描述信息之后再进行上传操作！",
@@ -881,29 +801,29 @@ export default {
         }
       });
     },
-    cancleUpload() {
+    cancleUpload () {
       this.$refs.uploader.active = false;
     },
     //查看学校图片
-    viewSclImgs() {
+    viewSclImgs () {
       this.selectedClass.selected = false;
       this.isShow = true;
     },
 
     //选择图片
-    changeImg(item) {
+    changeImg (item) {
       if (!this.onEdit) {
         return;
       }
       console.log(item);
       item.isChoosed = !item.isChoosed;
     },
-    cancleCircle() {
+    cancleCircle () {
       this.onEdit = !this.onEdit;
       this.ceshiList.forEach(item => (item.isChoosed = false));
     },
     //下载
-    download() {
+    download () {
       const selectList = this.ceshiList.filter(item => item.isChoosed);
       console.log(selectList);
       selectList.forEach(item => {
@@ -933,7 +853,7 @@ export default {
         }
       });
     },
-    clickDownload(href, name) {
+    clickDownload (href, name) {
       let eleLink = document.createElement("a");
       eleLink.download = name;
       eleLink.href = href;
@@ -941,7 +861,7 @@ export default {
       eleLink.remove();
     },
     //提交
-    submit() {
+    submit () {
       const selectList = this.ceshiList.filter(item => item.isChoosed);
       const ids = selectList.map(item => item.id);
       const body = {
@@ -1140,27 +1060,31 @@ export default {
 /* 内容 */
 .main {
   height: calc(100vh - 306px);
-  padding: 12px 54px 0;
+  padding: 0 54px;
 }
 .date-tag {
-  margin-bottom: 10px;
+  margin: 12px 0;
   cursor: default;
 }
 .photographer {
   display: inline-block;
   color: #acacac;
   font-weight: bold;
+  margin-bottom: 12px;
+}
+.scroll-photos {
+  width: 100%;
+  overflow: auto;
 }
 .photos {
   display: flex;
   flex-wrap: wrap;
+  width: 1660px;
   background-color: #f1f1f1;
   padding-top: 10px;
   padding-left: 10px;
-  margin-top: 10px;
 }
 .single-photo {
-  flex: 1 1 auto;
   position: relative;
   width: 100px;
   height: 100px;
@@ -1237,6 +1161,7 @@ export default {
   width: 100%;
   height: calc(100% - 142px);
   padding-right: 0;
+  padding-left: 0;
   padding-bottom: 0;
 }
 .dialog-photo .upload-photos {
@@ -1244,11 +1169,10 @@ export default {
   flex-wrap: wrap;
 }
 .dialog-photo .upload-single-photo {
-  flex: 1 1 auto;
   position: relative;
   width: 180px;
   height: 180px;
-  margin-right: 20px;
+  margin-left: 20px;
   margin-bottom: 20px;
   background-color: #fff;
   border: 1px solid #f1f1f1;
@@ -1349,7 +1273,7 @@ export default {
   align-items: center;
   width: 180px;
   height: 180px;
-  margin-right: 20px;
+  margin-left: 20px;
   background-color: #e8e8e8;
   border: 1px solid #f1f1f1;
 }
@@ -1385,6 +1309,7 @@ export default {
 .dialog-admin .admin-main {
   width: 100%;
   height: calc(100% - 142px);
+  margin-bottom: 10px;
   padding: 0px 30px;
   border-top: 2px solid #e0e0e0;
 }
