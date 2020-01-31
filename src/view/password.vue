@@ -152,6 +152,7 @@ export default {
 .header {
   height: 130px;
   font-family: MicrosoftYahei;
+  margin-bottom: 13vh;
   background-color: #fff;
   color: #f8b62b;
 }
@@ -183,38 +184,29 @@ export default {
 .right .bottom {
   font-size: 13px;
 }
-.main {
-  display: flex;
-  /* width: 100%; */
-  flex: 1;
-  background-color: #f1f1f1;
-  justify-content: center;
-  align-items: center;
-  color: #555555;
-}
 .main .logarea {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 460px;
   width: 778px;
+  height: 42.6%;
+  min-height: 370px;
+  max-height: 460px;
+  margin: 0 auto;
+  text-align: center;
   background-color: white;
-  border: 1px solid #acacac;
-  border-radius: 5px;
-  flex-direction: column;
+  border: 2px solid#e5e5e5;
+  border-radius: 4px;
 }
 .logarea .pwd-title {
   line-height: 48px;
-  border-bottom: 1px solid #ccc;
-  width: 760px;
-  margin-top: -115px;
+  border-bottom: 1px solid #e5e5e5;
+  width: 758px;
+  text-align: left;
   font-weight: bold;
+  margin: 0 auto;
 }
 
 .logarea >>> input.el-input__inner {
   width: 220px;
   height: 30px;
-  margin-bottom: 24px;
 }
 .logarea .el-button {
   width: 120px;
@@ -223,11 +215,21 @@ export default {
 }
 .logarea .user-name {
   display: inline-block;
-  margin-bottom: 14px;
   width: 220px;
   height: 30px;
   font-size: 14px;
   color: #555555;
+}
+.logarea /deep/ .el-form {
+  text-align: left;
+  width: 320px;
+  margin: 54px auto 0;
+}
+.logarea /deep/ .el-form-item__content {
+  height: 61px;
+}
+.logarea /deep/ .el-form-item__label {
+  padding: 0 16px 0 0;
 }
 .logarea /deep/ .el-input__suffix {
   top: -8px;
@@ -244,23 +246,21 @@ export default {
   content: "\e79d";
 }
 .logarea /deep/ .el-form-item__error {
-  top: 80%;
+  width: 100%;
+  top: 10px;
+  left: 260px;
   font-weight: 700;
 }
-.logarea /deep/ .el-form-item__content {
-  margin-left: 110px !important;
-}
 .logarea /deep/ .el-form-item {
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
 .sure-btn {
-  margin-top: 24px;
+  margin-top: 28px;
 }
 .footer {
   text-align: center;
   font-size: 12px;
   color: #858585;
-  height: 200px;
-  margin-top: -108px;
+  margin-top: 6vh;
 }
 </style>
