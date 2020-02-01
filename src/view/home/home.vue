@@ -44,7 +44,7 @@
             <div>
               <div v-if="this.tagsList.length !== 0" class="tags-container">
                 <div class="tags-type">选择标签：</div>
-                <div class="tags-row">
+                <div :class="['tags-row', {'more-row':showMoreTags}]">
                   <template v-for="(item, index) in tagsList">
                     <span
                       :class="item.selected?'active':null"
@@ -57,6 +57,7 @@
                     </span>
                   </template>
                 </div>
+                <span v-if="!showMoreTags" class='more-tag' @click="showMoreTags = true">更多标签</span>
               </div>
               <div v-if="this.uploadersList.length !== 0" class="tags-container">
                 <div class="tags-type" v-if="isShow">选择上传人：</div>
@@ -78,7 +79,7 @@
                     @change="changeDate"
                     v-model="dateTime"
                     type="month"
-                    placeholder="选择月"
+                    placeholder="选择年月"
                     value-format="yyyy-MM"
                   ></el-date-picker>
                   <!-- <el-select
@@ -371,6 +372,7 @@ export default {
       classList: [], //  左侧班级列表
       tagsList: [], // 标签列表
       uploadersList: [], // 上传人标签列表
+      showMoreTags: false, // 是否展示更多标签
       addUploadDisc: "", // 上传照片中的照片说明
       startUpload: false, // 开始上传标志
       isAdd: false, // 子账户新增标志
@@ -456,6 +458,17 @@ export default {
     this.viewSclImgs();
   },
   methods: {
+    //重置标签模糊搜索
+    resetTagsInput () {
+      // 获取标签列表
+      this.getMarkList();
+      // 获取管理员标签列表
+      this.getAdminMarkList();
+      this.paramsTitle = []
+      this.paramsName = []
+      this.inputTagsSearch = ""
+      this.dateTime = ""
+    },
     // 获取班级列表
     getClassList () {
       queryClass(null).then(res => {
@@ -521,6 +534,7 @@ export default {
     selectClass (select) {
       this.isShow = false;
       this.loading = true;
+      this.resetTagsInput()
       this.selectedClass = select;
       this.classList.forEach(item => {
         item.selected = false;
@@ -628,9 +642,9 @@ export default {
         name: this.paramsName,
         time: this.dateTime,
       }
-        searchImg(params).then(res => {
-          console.log(res)
-        })
+      searchImg(params).then(res => {
+        console.log(res)
+      })
 
     },
 
@@ -891,6 +905,7 @@ export default {
       if (this.selectedClass) { this.selectedClass.selected = false; }
       this.loading = true;
       this.isShow = true;
+      this.resetTagsInput()
       schoolImg(null).then(res => {
         this.loading = false;
         if (res) {
@@ -1109,6 +1124,10 @@ export default {
   border-bottom: 1px solid #e5e5e5;
   background-color: #f8f8f8;
 }
+.header /deep/ .el-date-editor.el-input,
+.header /deep/ .el-date-editor.el-input__inner {
+  width: 120px;
+}
 .tag-search {
   width: 50%;
   min-width: 300px;
@@ -1146,22 +1165,31 @@ export default {
   margin-bottom: 10px;
 }
 .tags-row {
-  width: calc(100vw - 563px);
+  width: calc(100vw - 663px);
   min-width: 200px;
   height: 22px;
   overflow: hidden;
 }
+.tags-row.more-row{
+  height: 54px;
+}
 .tags-row span,
-.date-tag {
+.date-tag,
+.more-tag {
   display: inline-block;
   height: 22px;
   line-height: 20px;
   padding: 0 12px;
   margin-right: 30px;
+  margin-bottom: 5px;
   border-radius: 2px;
   border: 1px solid #acacac;
   color: #f8b626;
   cursor: pointer;
+}
+.more-tag {
+  width: 100px;
+  color: #555555;
 }
 .tags-row span:active,
 .tags-row span.active {
@@ -1213,7 +1241,7 @@ export default {
 /* 内容 */
 .main {
   height: calc(100vh - 306px);
-  padding: 0 54px;
+  padding: 12px 54px 0;
   position: relative;
 }
 .main .noimgInfo {
@@ -1225,7 +1253,7 @@ export default {
   font-size: 24px;
 }
 .date-tag {
-  margin: 12px 0;
+  margin-bottom: 12px;
   cursor: default;
 }
 .photographer {
