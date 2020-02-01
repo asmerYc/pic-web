@@ -1,6 +1,6 @@
 /* eslint-disable handle-callback-err */
 <template>
-  <div class="container">
+  <div class="container" v-loading="loading">
     <div class="header">
       <el-row type="flex" class="row-bg" justify="end">
         <el-col :span="18">
@@ -79,7 +79,8 @@ export default {
       passWord: "",
       isNewUser: false,
       isDisabled: true,
-      pwdPass: true
+      pwdPass: true,
+      loading: false,
     };
   },
   created () {
@@ -99,8 +100,10 @@ export default {
         account: this.userName,
         password: this.passWord
       };
+      this.loading = true;
       apiAddress(body)
         .then(res => {
+          this.loading = false;
           if (res) {
             this.$message({
               message: "登录成功!",
@@ -116,6 +119,7 @@ export default {
         })
         // eslint-disable-next-line handle-callback-err
         .catch(error => {
+          this.loading = false;
           this.$message({
             message: "请确认密码是否正确!",
             type: "warning"

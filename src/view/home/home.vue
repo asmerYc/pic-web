@@ -112,7 +112,7 @@
           </div>
         </el-header>
         <!-- 照片内容 -->
-        <el-main class="main">
+        <el-main class="main" v-loading="loading">
           <div class="noimgInfo" v-if="this.allImgs.length === 0">暂无图片信息</div>
           <template v-if="this.allImgs.length !== 0">
             <div v-for="(item, index) in imgsInfo" :key="index" class="photos-item-container">
@@ -163,7 +163,7 @@
       <img src="../../assets/images/07_25.png" />
     </el-backtop>
     <!-- 上传图片弹窗 -->
-    <el-dialog title="上传照片" :visible.sync="dialogPhoto" class="dialog-photo">
+    <el-dialog v-loading="loading" title="上传照片" :visible.sync="dialogPhoto" class="dialog-photo">
       <span slot="title">
         <span class="upload-title">上传照片</span>
         <span class="upload-tip">（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span>
@@ -225,7 +225,7 @@
       </el-container>
     </el-dialog>
     <!-- 管理员设置弹窗 -->
-    <el-dialog title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
+    <el-dialog v-loading="loading" title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
       <span slot="title">
         <el-button
           :disabled="isAdd"
@@ -446,6 +446,7 @@ export default {
     this.getAdminMarkList();
     //获取七牛云token
     this.getQiNiutoken();
+    this.viewSclImgs();
   },
   methods: {
     // 获取班级列表
@@ -511,6 +512,7 @@ export default {
     //点击班级选中
     selectClass (select) {
       this.isShow = false;
+      this.loading = true;
       this.selectedClass = select;
       this.classList.forEach(item => {
         item.selected = false;
@@ -523,6 +525,7 @@ export default {
       };
       getImgs(body).then(res => {
         console.log(res);
+        this.loading = false;
         let imgs = [];
 
         this.imgsInfo = res;
@@ -714,6 +717,7 @@ export default {
     // 保存子账户
     saveUser () {
       let newUser = {};
+      this.loading = true;
       this.tableData.forEach(item => {
         if (item.isNew) {
           newUser = {
@@ -727,12 +731,14 @@ export default {
       });
       addTheUser(newUser).then(response => {
         if (response.code === 1) {
+          this.loading = false;
           this.$message({
             message: response.msg,
             type: "success"
           });
           this.getUserList();
         } else {
+          this.loading = false;
           this.$message({
             message: response.msg,
             type: "error"
@@ -820,6 +826,7 @@ export default {
         });
         return;
       }
+      this.loading = true;
       this.$refs.uploader.active = true;
       const imgUrls = this.files.map(item => {
         return `${this.domain}/${item.name}`;
@@ -831,6 +838,7 @@ export default {
       };
       upLoadImg(body).then(res => {
         if (res.code === 1) {
+          this.loading = false;
           this.$message({
             message: res.msg,
             type: "success"
@@ -851,9 +859,10 @@ export default {
     //查看学校图片
     viewSclImgs () {
       if (this.selectedClass) { this.selectedClass.selected = false; }
-
+      this.loading = true;
       this.isShow = true;
       schoolImg(null).then(res => {
+        this.loading = false;
         if (res) {
           this.imgsInfo = res;
           let imgs = [];
@@ -964,11 +973,13 @@ export default {
         });
         return;
       }
+      this.loading = true;
       const ids = selectList.map(item => item.id);
       const body = {
         img: ids
       };
       submitImg(body).then(res => {
+        this.loading = false;
         this.$message({
           type: "success",
           message: "提交成功"

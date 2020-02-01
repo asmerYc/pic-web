@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" v-loading="loading">
     <div class="header">
       <el-row type="flex" class="row-bg" justify="end">
         <el-col :span="18">
@@ -85,6 +85,7 @@ export default {
       passWord: '',
       isNewUser: false,
       isDisabled: true,
+      loading: false,
       ruleForm: {
         pass: '',
         checkPass: '',
@@ -104,6 +105,7 @@ export default {
   },
   methods: {
     submitForm (formName) {
+      this.loading = true;
       this.$refs[formName].validate((valid) => {
         console.log(this.password)
         const body = {
@@ -114,12 +116,14 @@ export default {
         if (valid) {
           resetPsd(body).then(res => {
             if (res && res.code === 1) {
+              this.loading = false;
               this.$message({
                 message: "修改成功!",
                 type: "success"
               })
               this.$router.push({ path: "login" });
             } else {
+              this.loading = false;
               this.$message({
                 message: "修改失败!",
                 type: "error"
