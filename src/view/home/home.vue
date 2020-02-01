@@ -489,6 +489,7 @@ export default {
           this.tagsList.forEach(item => {
             item.selected = false;
           });
+          this.tagsList = this.tagsList.filter(item => !!item.name);
           this.tagsList = JSON.parse(JSON.stringify(this.tagsList));
         }
       });
@@ -621,7 +622,7 @@ export default {
         }
       })
       this.inputTagsSearch =
-        this.dateTime + (this.dateTime && (this.paramsTitle.length > 0 || this.paramsName.length > 0) ? '、' : '') +
+        (this.dateTime ? this.dateTime : '') + (this.dateTime && (this.paramsTitle.length > 0 || this.paramsName.length > 0) ? '、' : '') +
         this.paramsTitle.join('、') + (this.paramsTitle.length > 0 && this.paramsName.length > 0 ? '、' : '') +
         this.paramsName.join('、');
       //   console.log(value)
@@ -1170,7 +1171,7 @@ export default {
   height: 22px;
   overflow: hidden;
 }
-.tags-row.more-row{
+.tags-row.more-row {
   height: 54px;
 }
 .tags-row span,
@@ -1221,6 +1222,10 @@ export default {
 }
 .tags-row /deep/ .el-select .el-input .el-select__caret {
   color: #f8b626;
+}
+.tags-row /deep/ .el-input__prefix,
+.tags-row /deep/ .el-input__suffix {
+  top: -9px;
 }
 .add-photo-btn {
   display: inline-flex;
