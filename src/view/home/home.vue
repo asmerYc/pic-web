@@ -33,7 +33,7 @@
         <!-- 头部标签 -->
         <el-header class="header" height="180px">
           <div>
-            <el-input class="tag-search" v-model="inputTagsSearch" placeholder="请输入内容">
+            <el-input class="tag-search" v-model="inputTagsSearch" readonly placeholder="请输入内容">
               <el-button
                 class="tag-search-btn"
                 slot="append"
@@ -46,7 +46,11 @@
                 <div class="tags-type">选择标签：</div>
                 <div class="tags-row">
                   <template v-for="(item, index) in tagsList">
-                    <span @click="selectTags(item)" :key="index">
+                    <span
+                      :class="item.selected?'active':null"
+                      @click="selectTags(item)"
+                      :key="index"
+                    >
                       {{
                       item.name
                       }}
@@ -59,6 +63,7 @@
                 <div class="tags-row" v-if="isShow">
                   <template v-for="(item, index) in uploadersList">
                     <span
+                      :class="item.selected?'active':null"
                       v-if="index < 8"
                       @click="selectUploaders(item)"
                       :key="index"
@@ -381,6 +386,8 @@ export default {
       isChoosed: false,
       dateTime: '',
       loading: false,
+      paramsTitle: [],
+      paramsName: [],
       time: {
         year: "",
         month: ""
@@ -481,6 +488,7 @@ export default {
             item.selected = false;
           });
           this.uploadersList = this.uploadersList.filter(item => !!item.name);
+          this.uploadersList = JSON.parse(JSON.stringify(this.uploadersList));
         }
       });
     },
@@ -561,43 +569,65 @@ export default {
     },
     // 标签选择
     selectTags (item) {
-      this.searchValue(item.name);
+      item.selected = !item.selected
+      this.searchValue()
     },
     // 上传人选择
     selectUploaders (item) {
-      this.searchValue(item.name);
+      item.selected = !item.selected
+      this.searchValue()
     },
     //时间选择
     changeDate () {
-      this.searchValue(this.dateTime);
+      this.searchValue()
     },
-    // 年份选择
-    yearSelect (value) {
-      this.searchValue(value);
-    },
-    // 月份选择
-    monthSelect (value) {
-      this.searchValue(value);
-    },
+    // // 年份选择
+    // yearSelect (value) {
+    //   this.searchValue(value);
+    // },
+    // // 月份选择
+    // monthSelect (value) {
+    //   this.searchValue(value);
+    // },
     // 根据标签填入搜索框的value
-    searchValue (value) {
-      console.log(value)
-      this.inputTagsSearch = this.inputTagsSearch.trim();
-      if (!value) {
-        return;
-      }
-      if (this.inputTagsSearch.length === 0) {
-        this.inputTagsSearch = value;
-      } else {
-        this.inputTagsSearch = this.inputTagsSearch + " 、" + value;
-      }
+    searchValue () {
+      this.paramsTitle = []
+      this.paramsName = []
+      this.tagsList.forEach(item => {
+        if (item.selected) {
+          this.paramsTitle.push(item.name)
+        }
+      })
+      this.uploadersList.forEach(item => {
+        if (item.selected) {
+          this.paramsName.push(item.name)
+        }
+      })
+      this.inputTagsSearch =
+        this.dateTime + (this.dateTime && (this.paramsTitle.length > 0 || this.paramsName.length > 0) ? '、' : '') +
+        this.paramsTitle.join('、') + (this.paramsTitle.length > 0 && this.paramsName.length > 0 ? '、' : '') +
+        this.paramsName.join('、');
+      //   console.log(value)
+      //   this.inputTagsSearch = this.inputTagsSearch.trim();
+      //   if (!value) {
+      //     return;
+      //   }
+      //   if (this.inputTagsSearch.length === 0) {
+      //     this.inputTagsSearch = value;
+      //   } else {
+      //     this.inputTagsSearch = this.inputTagsSearch + " 、" + value;
+      //   }
     },
     //搜索图片查询
     searchResult () {
-      console.log(this.inputTagsSearch)
-      searchImg().then(res => {
-        console.log(res)
-      })
+      const params = {
+        title: this.paramsTitle,
+        name: this.paramsName,
+        time: this.dateTime,
+      }
+        searchImg(params).then(res => {
+          console.log(res)
+        })
 
     },
 
@@ -1122,7 +1152,8 @@ export default {
   color: #f8b626;
   cursor: pointer;
 }
-.tags-row span:active {
+.tags-row span:active,
+.tags-row span.active {
   color: white;
   background-color: #f8b626;
   border: 1px solid #f8b626;
