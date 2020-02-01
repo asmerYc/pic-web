@@ -31,3 +31,8 @@ export const qiniuToken = p => get("/api/v1/upload/get_token", p);
 export const upLoadImg = p => post("/api/v1/management/up_img", p);
 //提交照片
 export const submitImg = p => post("/api/v1/management/sub_img", p);
+
+//查看学校图片
+export const schoolImg = p => get("/api/v1/management/school_imglist", p);
+//学校管理页 照片搜索
+export const searchImg = p => get("/api/v1/management/search", p);

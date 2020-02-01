@@ -34,7 +34,12 @@
         <el-header class="header" height="180px">
           <div>
             <el-input class="tag-search" v-model="inputTagsSearch" placeholder="请输入内容">
-              <el-button class="tag-search-btn" slot="append" icon="el-icon-search"></el-button>
+              <el-button
+                class="tag-search-btn"
+                slot="append"
+                icon="el-icon-search"
+                @click="searchResult"
+              ></el-button>
             </el-input>
             <div>
               <div v-if="this.tagsList.length !== 0" class="tags-container">
@@ -64,7 +69,14 @@
               <div class="tags-container">
                 <div class="tags-type">选择日期：</div>
                 <div class="tags-row">
-                  <el-select
+                  <el-date-picker
+                    @change="changeDate"
+                    v-model="dateTime"
+                    type="month"
+                    placeholder="选择月"
+                    value-format="yyyy-MM"
+                  ></el-date-picker>
+                  <!-- <el-select
                     class="year-select"
                     v-model="time.year"
                     @change="yearSelect($event)"
@@ -89,7 +101,7 @@
                       :label="item.label"
                       :value="item.value"
                     ></el-option>
-                  </el-select>
+                  </el-select>-->
                 </div>
               </div>
             </div>
@@ -101,20 +113,21 @@
         </el-header>
         <!-- 照片内容 -->
         <el-main class="main">
-          <template>
+          <div class="noimgInfo" v-if="this.allImgs.length === 0">暂无图片信息</div>
+          <template v-if="this.allImgs.length !== 0">
             <div v-for="(item, index) in imgsInfo" :key="index" class="photos-item-container">
               <span v-if="item.create_time" class="date-tag">{{ item.create_time | formatDate }}</span>
               <div>
-                <span v-if="item.user && item.user.nickname" class="photographer">
+                <span v-if="item.user && item.user.name" class="photographer">
                   {{
-                  item.user && item.user.nickname
+                  item.user && item.user.name
                   }}
                 </span>
                 <div class="scroll-photos">
                   <div class="photos">
                     <div
                       @click="changeImg(i)"
-                      v-for="(i, index) in ceshiList"
+                      v-for="(i, index) in item.user && item.user.imgs"
                       class="single-photo"
                       :key="index"
                     >
@@ -336,7 +349,9 @@ import {
   getImgs,
   qiniuToken,
   upLoadImg,
-  submitImg
+  submitImg,
+  schoolImg,
+  searchImg,
 } from "../../request/api";
 export default {
   data () {
@@ -357,12 +372,15 @@ export default {
       tableData: [], // 子账户列表
       imgsInfo: [], //点击左侧得到照片渲染所有信息,
       imgs: [], //渲染的照片信息,
+      allImgs: [],//是否有图片信息
       qiToken: "",
       domain: "",
       selectedClass: "",
-      isShow: false, //是否显示上传人
+      isShow: true, //是否显示上传人
       ceshiList: [],
       isChoosed: false,
+      dateTime: '',
+      loading: false,
       time: {
         year: "",
         month: ""
@@ -493,7 +511,6 @@ export default {
     //点击班级选中
     selectClass (select) {
       this.isShow = false;
-      console.log(select);
       this.selectedClass = select;
       this.classList.forEach(item => {
         item.selected = false;
@@ -506,26 +523,40 @@ export default {
       };
       getImgs(body).then(res => {
         console.log(res);
-        // console.log(res[0].user_class);
-        this.imgsInfo = res;
-        // this.imgsInfo = res[0].user_class;
-        this.ceshiList = res[0].user.user_group[0].images.map(item => {
-          return {
-            ...item,
-            isChoosed: false
-          };
-        });
+        let imgs = [];
 
-        console.log(this.ceshiList);
-        // this.imgs = this.imgsInfo.map(item => {
-        //   if (item.user.user_group.length > 0) {
-        //     item.user.user_group.map(it => {
-        //       it.images.contact(it.images);
-        //     });
-        //   }
-        // });
-        // console.log(this.imgs);
-        // console.log(Moment(res[0].create_time).format("YYYY年MM月DD日"));
+        this.imgsInfo = res;
+        //归档出所有的图片
+        if (res && res.length !== 0) {
+          this.imgsInfo.forEach(item => {
+            this.allImgs = this.allImgs.concat(item.user.imgs)
+          })
+        } else {
+          this.allImgs = [];
+          console.log(this.allImgs.length)
+          return;
+        }
+
+        this.imgsInfo.forEach(ele => {
+          if (ele.user && ele.user.user_group) {
+            ele.user.user_group.forEach(item => {
+              imgs = imgs.concat(item.images)
+            })
+            imgs.forEach(it => {
+              const extra = {
+                isChoosed: false
+              }
+              Object.assign(it, extra)
+            })
+            console.log(imgs)
+            const newExtra = {
+              imgs: imgs
+            }
+            Object.assign(ele.user, newExtra)
+          }
+
+        });
+        console.log(this.imgsInfo)
       });
     },
     // 标签选择
@@ -535,6 +566,10 @@ export default {
     // 上传人选择
     selectUploaders (item) {
       this.searchValue(item.name);
+    },
+    //时间选择
+    changeDate () {
+      this.searchValue(this.dateTime);
     },
     // 年份选择
     yearSelect (value) {
@@ -546,6 +581,7 @@ export default {
     },
     // 根据标签填入搜索框的value
     searchValue (value) {
+      console.log(value)
       this.inputTagsSearch = this.inputTagsSearch.trim();
       if (!value) {
         return;
@@ -555,6 +591,14 @@ export default {
       } else {
         this.inputTagsSearch = this.inputTagsSearch + " 、" + value;
       }
+    },
+    //搜索图片查询
+    searchResult () {
+      console.log(this.inputTagsSearch)
+      searchImg().then(res => {
+        console.log(res)
+      })
+
     },
 
     /* 上传图片弹窗 */
@@ -806,8 +850,46 @@ export default {
     },
     //查看学校图片
     viewSclImgs () {
-      this.selectedClass.selected = false;
+      if (this.selectedClass) { this.selectedClass.selected = false; }
+
       this.isShow = true;
+      schoolImg(null).then(res => {
+        if (res) {
+          this.imgsInfo = res;
+          let imgs = [];
+          this.imgsInfo.forEach(ele => {
+            const extraUser = {
+              user: {}
+            }
+            Object.assign(ele, extraUser)
+            if (ele.user_group) {
+              ele.user_group.forEach(item => {
+                imgs = imgs.concat(item.images)
+              })
+              imgs.forEach(it => {
+                const extra = {
+                  isChoosed: false
+                }
+                Object.assign(it, extra)
+              })
+              console.log(imgs)
+              const newExtra = {
+                imgs: imgs,
+                name: ele.name
+              }
+              Object.assign(ele.user, newExtra)
+            }
+          })
+          console.log(this.imgsInfo)
+          this.imgsInfo.forEach(item => {
+            this.allImgs = this.allImgs.concat(item.user.imgs)
+          })
+
+          this.imgsInfo = [...this.imgsInfo]
+        }
+      })
+
+      //   this.allImgs = [...[]];
     },
 
     //选择图片
@@ -815,23 +897,30 @@ export default {
       if (!this.onEdit) {
         return;
       }
-      console.log(item);
       item.isChoosed = !item.isChoosed;
+      console.log(item.isChoosed);
+      this.imgsInfo = [...this.imgsInfo]
     },
     cancleCircle () {
       this.onEdit = !this.onEdit;
-      this.ceshiList.forEach(item => (item.isChoosed = false));
+      this.resetImgStatus();
     },
     //下载
     download () {
-      const selectList = this.ceshiList.filter(item => item.isChoosed);
-      console.log(selectList);
+      let imgList = []
+      this.imgsInfo.forEach(item => {
+        imgList = imgList.concat(item.user.imgs)
+      })
+      const selectList = imgList.filter(item => item.isChoosed);
+      if (selectList.length === 0) {
+        this.$message({
+          type: "warning",
+          message: "请先选择要下载的照片！"
+        });
+        return;
+      }
       selectList.forEach(item => {
         if (item.img_url) {
-          //   var alink = document.createElement("a");
-          //   alink.href = item.img_url;
-          //   alink.download = "pic"; //图片名
-          //   alink.click();
           let image = new Image();
           image.setAttribute("crossOrigin", "anonymous");
           image.src = item.img_url;
@@ -846,6 +935,7 @@ export default {
             canvas.toBlob(blob => {
               let url = URL.createObjectURL(blob);
               this.clickDownload(url, name);
+              this.resetImgStatus();
               // 用完释放URL对象
               URL.revokeObjectURL(url);
             });
@@ -862,7 +952,18 @@ export default {
     },
     //提交
     submit () {
-      const selectList = this.ceshiList.filter(item => item.isChoosed);
+      let imgList = []
+      this.imgsInfo.forEach(item => {
+        imgList = imgList.concat(item.user.imgs)
+      })
+      const selectList = imgList.filter(item => item.isChoosed);
+      if (selectList.length === 0) {
+        this.$message({
+          type: "warning",
+          message: "请先选择要提交的照片！"
+        });
+        return;
+      }
       const ids = selectList.map(item => item.id);
       const body = {
         img: ids
@@ -872,8 +973,18 @@ export default {
           type: "success",
           message: "提交成功"
         });
-        this.ceshiList.forEach(item => (item.isChoosed = false));
+        this.resetImgStatus();
       });
+    },
+    resetImgStatus () {
+      this.imgsInfo.forEach(ele => {
+        if (ele.user && ele.user.imgs) {
+          ele.user.imgs.forEach(item => {
+            item.isChoosed = false
+          })
+        }
+      })
+      this.imgsInfo = [...this.imgsInfo]
     }
   }
 };
@@ -1061,6 +1172,15 @@ export default {
 .main {
   height: calc(100vh - 306px);
   padding: 0 54px;
+  position: relative;
+}
+.main .noimgInfo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #ccc;
+  font-size: 24px;
 }
 .date-tag {
   margin: 12px 0;
@@ -1323,5 +1443,11 @@ export default {
   width: 100%;
   padding: 25px 50px;
   border-top: 2px solid #e0e0e0;
+}
+.el-input--suffix /deep/ .el-input__prefix {
+  top: -8px;
+  left: 5px;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
 }
 </style>
