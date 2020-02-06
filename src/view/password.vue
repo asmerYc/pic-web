@@ -2,7 +2,7 @@
   <div class="container" v-loading="loading">
     <div class="header">
       <el-row type="flex" class="row-bg" justify="end">
-        <el-col :span="18">
+        <el-col :span="12">
           <div class="info">
             <img class="logo" src="../assets/images/LOGO_03.gif" alt />
             <div class="title">
@@ -13,6 +13,9 @@
               </div>
             </div>
           </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="pwsStyle">{{pwdName}}</div>
         </el-col>
       </el-row>
     </div>
@@ -29,14 +32,11 @@
           style="margin-top:45px"
         >
           <el-form-item label="登录账户">
-            <span class="user-name">{{account}}</span>
+            <span class="user-name">{{accountNum}}</span>
           </el-form-item>
           <el-form-item label="请输入新密码" prop="pass">
             <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
           </el-form-item>
-          <!-- <el-form-item label="请输入新密码" prop="pass">
-            <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
-          </el-form-item>-->
           <el-form-item label="请重复新密码" prop="checkPass">
             <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
           </el-form-item>
@@ -56,7 +56,6 @@ import { mapMutations, mapState, mapGetters } from 'vuex';
 
 export default {
   computed: {
-    ...mapState(['account', "password"]),
     ...mapGetters(['getAccount'])
   },
   data () {
@@ -81,11 +80,12 @@ export default {
     };
     return {
       msg: 'Welcome',
-      userName: '',
-      passWord: '',
+      accountNum: localStorage.getItem('account'),
+      passWord: localStorage.getItem('password'),
       isNewUser: false,
       isDisabled: true,
       loading: false,
+      pwdName: '',
       ruleForm: {
         pass: '',
         checkPass: '',
@@ -101,21 +101,20 @@ export default {
     }
   },
   created () {
-    // this.keyupSubmit()
+    this.pwdName = this.$route.query.name;
   },
   methods: {
     submitForm (formName) {
       this.loading = true;
       this.$refs[formName].validate((valid) => {
-        console.log(this.password)
         const body = {
-          account: this.getAccount,
-          password: this.password,
+          account: this.accountNum,
+          password: this.passWord,
           new_pwd: this.ruleForm.checkPass,
         }
         if (valid) {
           resetPsd(body).then(res => {
-            if (res && res.code === 1) {
+            if (res && res.msg === '修改成功') {
               this.loading = false;
               this.$message({
                 message: "修改成功!",
@@ -266,5 +265,10 @@ export default {
   font-size: 12px;
   color: #858585;
   margin-top: 6vh;
+}
+.pwsStyle {
+  margin-top: 8vh;
+  color: #808080;
+  font-size: 20px;
 }
 </style>

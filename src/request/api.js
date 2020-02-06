@@ -36,3 +36,5 @@ export const submitImg = p => post("/api/v1/management/sub_img", p);
 export const schoolImg = p => get("/api/v1/management/school_imglist", p);
 //学校管理页 照片搜索
 export const searchImg = p => get("/api/v1/management/search", p);
+//自动生成账户名称
+export const getAccount = p => get("/api/v1/admin/get_account", p);

@@ -33,7 +33,12 @@
         <!-- 头部标签 -->
         <el-header class="header" height="180px">
           <div>
-            <el-input class="tag-search" v-model="inputTagsSearch" readonly placeholder="请输入内容">
+            <el-input
+              class="tag-search"
+              v-model="inputTagsSearch"
+              @input="searchOperate"
+              placeholder="请输入内容"
+            >
               <el-button
                 class="tag-search-btn"
                 slot="append"
@@ -57,7 +62,12 @@
                     </span>
                   </template>
                 </div>
-                <span v-if="!showMoreTags" class='more-tag' @click="showMoreTags = true">更多标签</span>
+                <span class="more-tag" @click="showMoreTags = !showMoreTags">
+                  更多标签
+                  <i
+                    v-bind:class="{'el-icon-caret-bottom' : !showMoreTags ,'el-icon-caret-top' : showMoreTags}"
+                  ></i>
+                </span>
               </div>
               <div v-if="this.uploadersList.length !== 0" class="tags-container">
                 <div class="tags-type" v-if="isShow">选择上传人：</div>
@@ -82,37 +92,11 @@
                     placeholder="选择年月"
                     value-format="yyyy-MM"
                   ></el-date-picker>
-                  <!-- <el-select
-                    class="year-select"
-                    v-model="time.year"
-                    @change="yearSelect($event)"
-                    placeholder="年份"
-                  >
-                    <el-option
-                      v-for="(item, index) in yearList"
-                      :key="index"
-                      :label="item.label"
-                      :value="item.value"
-                    ></el-option>
-                  </el-select>
-                  <el-select
-                    class="month-select"
-                    v-model="time.month"
-                    @change="monthSelect($event)"
-                    placeholder="月份"
-                  >
-                    <el-option
-                      v-for="(item, index) in monthList"
-                      :key="index"
-                      :label="item.label"
-                      :value="item.value"
-                    ></el-option>
-                  </el-select>-->
                 </div>
               </div>
             </div>
           </div>
-          <div class="add-photo-btn" @click="dialogPhoto = true">
+          <div class="add-photo-btn" @click="uploadModal">
             <img src="../../assets/images/添加_06.png" />
             <span>添加照片</span>
           </div>
@@ -123,14 +107,18 @@
           <template v-if="this.allImgs.length !== 0">
             <div v-for="(item, index) in imgsInfo" :key="index" class="photos-item-container">
               <span v-if="item.create_time" class="date-tag">{{ item.create_time | formatDate }}</span>
-              <div>
+              <div style="margin-top:10px;">
                 <span v-if="item.user && item.user.name" class="photographer">
                   {{
                   item.user && item.user.name
                   }}
                 </span>
-                <div class="scroll-photos">
-                  <div class="photos">
+                <div class="scroll-photos" :ref="`element${index}`">
+                  <div v-if="item.user.imgs.length === 0">暂无图片</div>
+                  <div
+                    :class="['photos',{'more-imgs': item.user.isMore}]"
+                    v-if="item.user.imgs.length > 0"
+                  >
                     <div
                       @click="changeImg(i)"
                       v-for="(i, index) in item.user && item.user.imgs"
@@ -138,8 +126,15 @@
                       :key="index"
                     >
                       <span v-if="onEdit" :class="[{ choosed: i.isChoosed }, 'choose-icon']"></span>
-                      <!-- <img src="../../assets/images/LOGO_03.gif" alt /> -->
-                      <img :src="i.img_url" alt />
+                      <img :src="`${i.img_url}-thumb`" alt />
+                    </div>
+                  </div>
+                  <div v-if="item.user.moreRow" class="moreClass" @click="changeIsMore(item.user)">
+                    <div class="moreChild">
+                      {{!item.user.isMore ? '查看更多' : '点击收起'}}
+                      <i
+                        v-bind:class="{'el-icon-caret-bottom' : !item.user.isMore ,'el-icon-caret-top' : item.user.isMore}"
+                      ></i>
                     </div>
                   </div>
                 </div>
@@ -169,18 +164,28 @@
       <img src="../../assets/images/07_25.png" />
     </el-backtop>
     <!-- 上传图片弹窗 -->
-    <el-dialog v-loading="loading" title="上传照片" :visible.sync="dialogPhoto" class="dialog-photo">
+    <el-dialog
+      :close-on-click-modal="false"
+      v-loading="loading"
+      title="上传照片"
+      :visible.sync="dialogPhoto"
+      class="dialog-photo"
+    >
       <span slot="title">
         <span class="upload-title">上传照片</span>
         <span class="upload-tip">（每次上传照片最多不超过20张，上传过程中请不要删除照片）</span>
       </span>
       <el-container>
         <el-main class="upload-main">
-          <div class="upload-photos">
+          <div :class="['upload-photos',{'before-upload-photos' : files.length <= 0}]">
+            <!-- <div :class="before-upload-photos"> -->
             <div v-for="(file, index) in files" class="upload-single-photo" :key="index">
               <img v-if="file.blob" :src="file.blob" />
               <!-- 点击开始上传  显示进度条-->
-              <div v-if="file.active || file.progress !== '0.00'" class="extraItem progress">
+              <div
+                v-if="!(file.progress === '0.00' || file.progress === 100)"
+                class="extraItem progress"
+              >
                 <span class="extraItem progressText">{{ file.progress || 0 }}%</span>
                 <div class="extraItem activeProgress" :style="{ width: file.progress + '%' }"></div>
               </div>
@@ -199,6 +204,7 @@
                 :multiple="true"
                 :maximum="20"
                 :custom-action="customAction"
+                :thread="20"
                 @input-file="inputFile"
                 @input-filter="inputFilter"
               >添加照片</file-upload>
@@ -208,9 +214,10 @@
         <el-footer height="100px" class="upload-footer">
           <el-button
             v-if="!$refs.uploader || !$refs.uploader.active"
-            type="info"
-            class="upload-btn start-upload"
+            type="warning"
+            :class="['start-upload','upload-btn',]"
             @click="submitUpload"
+            :disabled="hasDesinfo"
           >开始上传</el-button>
           <el-button v-else type="info" class="upload-btn cancle-upload" @click="cancleUpload">取消上传</el-button>
           <!-- <el-button
@@ -225,6 +232,7 @@
             class="add-upload-disc"
             v-model="addUploadDisc"
             resize="none"
+            @input="desinfoChange"
             placeholder="为了方便搜索，请按照时间、事件添加照片说明"
           ></el-input>
         </el-footer>
@@ -233,13 +241,7 @@
     <!-- 管理员设置弹窗 -->
     <el-dialog v-loading="loading" title="管理员设置" :visible.sync="dialogAdmin" class="dialog-admin">
       <span slot="title">
-        <el-button
-          :disabled="isAdd"
-          type="primary"
-          icon="el-icon-plus"
-          class="add-admin"
-          @click="addUser"
-        >新增</el-button>
+        <el-button type="primary" icon="el-icon-plus" class="add-admin" @click="addUser">新增</el-button>
       </span>
       <el-container>
         <el-main class="admin-main">
@@ -248,6 +250,7 @@
             <el-table-column label="部门" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
                 <el-input
+                  class="focused"
                   v-if="isAdd && scope.row.isNew"
                   v-model="scope.row.department"
                   placeholder="部门"
@@ -258,7 +261,12 @@
             <!-- 姓名 -->
             <el-table-column label="姓名" width="100" show-overflow-tooltip>
               <template slot-scope="scope">
-                <el-input v-if="isAdd && scope.row.isNew" v-model="scope.row.name" placeholder="姓名"></el-input>
+                <el-input
+                  v-if="isAdd && scope.row.isNew"
+                  v-model="scope.row.name"
+                  @blur="nameBlur(scope.row)"
+                  placeholder="姓名"
+                ></el-input>
                 <span v-else>{{ scope.row.name }}</span>
               </template>
             </el-table-column>
@@ -276,6 +284,7 @@
                   v-if="isAdd && scope.row.isNew"
                   v-model="scope.row.account"
                   placeholder="登陆账号"
+                  readonly
                 ></el-input>
                 <span v-else>{{ scope.row.account }}</span>
               </template>
@@ -333,6 +342,11 @@
         </el-footer>
       </el-container>
     </el-dialog>
+    <el-dialog title="查看图片" :visible.sync="dialogBigPic">
+      <div>
+        <img :src="bigUrl" style="width:100%;height:100%" alt />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -358,6 +372,7 @@ import {
   submitImg,
   schoolImg,
   searchImg,
+  getAccount,
 } from "../../request/api";
 export default {
   data () {
@@ -365,6 +380,7 @@ export default {
       files: [], // 上传的照片file，最大为20个file
       dialogAdmin: false, //管理员弹窗显示
       dialogPhoto: false, //照片上传弹窗显示
+      dialogBigPic: false, //照片上传弹窗显示
       count: 20,
       onEdit: false, // 首页照片是编辑状态：可选择提交或者下载
       inputClassName: "", // 输入班级名称
@@ -390,54 +406,15 @@ export default {
       loading: false,
       paramsTitle: [],
       paramsName: [],
+      hasDesinfo: false,
+      servalue: "",
+      isMore: false, //图片显示更多控制样式,
+      bigUrl: '',
+      keys: [],
       time: {
         year: "",
         month: ""
-      }, // 日期
-      yearList: [
-        {
-          value: "",
-          label: "年份"
-        },
-        {
-          value: "2019",
-          label: "2019"
-        },
-        {
-          value: "2018",
-          label: "2018"
-        },
-        {
-          value: "2017",
-          label: "2017"
-        },
-        {
-          value: "2016",
-          label: "2016"
-        },
-        {
-          value: "2015",
-          label: "2015"
-        }
-      ],
-      monthList: [
-        {
-          value: "",
-          label: "月份"
-        },
-        {
-          value: "1月",
-          label: "1月"
-        },
-        {
-          value: "2月",
-          label: "2月"
-        },
-        {
-          value: "3月",
-          label: "3月"
-        }
-      ]
+      },
     };
   },
   filters: {
@@ -456,6 +433,12 @@ export default {
     //获取七牛云token
     this.getQiNiutoken();
     this.viewSclImgs();
+  },
+  mounted () {
+  },
+  updated () {
+
+    this.rowDateheight()
   },
   methods: {
     //重置标签模糊搜索
@@ -547,24 +530,14 @@ export default {
         id: select.id
       };
       getImgs(body).then(res => {
-        console.log(res);
+        this.allImgs = [];
         this.loading = false;
-        let imgs = [];
-
         this.imgsInfo = res;
-        //归档出所有的图片
-        if (res && res.length !== 0) {
-          this.imgsInfo.forEach(item => {
-            this.allImgs = this.allImgs.concat(item.user.imgs)
-          })
-        } else {
-          this.allImgs = [];
-          console.log(this.allImgs.length)
-          return;
-        }
+        console.log(this.imgsInfo);
 
         this.imgsInfo.forEach(ele => {
           if (ele.user && ele.user.user_group) {
+            let imgs = [];
             ele.user.user_group.forEach(item => {
               imgs = imgs.concat(item.images)
             })
@@ -574,15 +547,23 @@ export default {
               }
               Object.assign(it, extra)
             })
-            console.log(imgs)
             const newExtra = {
-              imgs: imgs
+              imgs: imgs,
+              isMore: false,
+              moreRow: false,
             }
             Object.assign(ele.user, newExtra)
           }
-
         });
-        console.log(this.imgsInfo)
+        //归档出所有的图片
+        if (res && res.length !== 0) {
+          this.imgsInfo.forEach(item => {
+            this.allImgs = this.allImgs.concat(item.user.imgs)
+          })
+        }
+        this.rowDateheight();
+        const imgInfos = JSON.parse(JSON.stringify(this.imgsInfo))
+        this.imgsInfo = imgInfos
       });
     },
     // 标签选择
@@ -599,14 +580,6 @@ export default {
     changeDate () {
       this.searchValue()
     },
-    // // 年份选择
-    // yearSelect (value) {
-    //   this.searchValue(value);
-    // },
-    // // 月份选择
-    // monthSelect (value) {
-    //   this.searchValue(value);
-    // },
     // 根据标签填入搜索框的value
     searchValue () {
       this.paramsTitle = []
@@ -625,26 +598,57 @@ export default {
         (this.dateTime ? this.dateTime : '') + (this.dateTime && (this.paramsTitle.length > 0 || this.paramsName.length > 0) ? '、' : '') +
         this.paramsTitle.join('、') + (this.paramsTitle.length > 0 && this.paramsName.length > 0 ? '、' : '') +
         this.paramsName.join('、');
-      //   console.log(value)
-      //   this.inputTagsSearch = this.inputTagsSearch.trim();
-      //   if (!value) {
-      //     return;
-      //   }
-      //   if (this.inputTagsSearch.length === 0) {
-      //     this.inputTagsSearch = value;
-      //   } else {
-      //     this.inputTagsSearch = this.inputTagsSearch + " 、" + value;
-      //   }
     },
     //搜索图片查询
     searchResult () {
+      let timsamp = new Date(this.dateTime).getTime()
+      this.loading = true;
       const params = {
-        title: this.paramsTitle,
-        name: this.paramsName,
-        time: this.dateTime,
+        title: this.paramsTitle || [],
+        name: this.paramsName || [],
+        time: timsamp || " ",
+        cid: this.selectedClass.id || '',
+        servalue: this.servalue || '',
       }
       searchImg(params).then(res => {
-        console.log(res)
+        this.allImgs = [];
+        this.loading = false;
+        if (res) {
+          this.imgsInfo = res;
+          this.imgsInfo.forEach(ele => {
+            const extraUser = {
+              user: {}
+            }
+            Object.assign(ele, extraUser)
+            if (ele.user_group) {
+              let imgs = [];
+              ele.user_group.forEach(item => {
+                imgs = imgs.concat(item.images)
+              })
+              imgs.forEach(it => {
+                const extra = {
+                  isChoosed: false
+                }
+                Object.assign(it, extra)
+              })
+              const newExtra = {
+                imgs: imgs,
+                name: ele.name,
+                isMore: false,
+                moreRow: false,
+              }
+              Object.assign(ele.user, newExtra)
+            }
+          })
+          //   this.imgsInfo = [...this.imgsInfo]
+          this.rowDateheight();
+          const imgInfos = JSON.parse(JSON.stringify(this.imgsInfo))
+          this.imgsInfo = imgInfos
+          this.imgsInfo.forEach(item => {
+            this.allImgs = this.allImgs.concat(item.user.imgs)
+          })
+
+        }
       })
 
     },
@@ -665,13 +669,11 @@ export default {
           //   console.log("status", newFile.xhr.status);
         }
       }
+
       // 自动上传
-      //   if (
-      //     Boolean(newFile) !== Boolean(oldFile) ||
-      //     oldFile.error !== newFile.error
-      //   ) {
+      //   if (Boolean(newFile) !== Boolean(oldFile) || oldFile.error !== newFile.error) {
       //     if (!this.$refs.uploader.active) {
-      //       this.$refs.uploader.active = true;
+      //       this.$refs.uploader.active = true
       //     }
       //   }
     },
@@ -699,11 +701,12 @@ export default {
       }
     },
     // 组件上传照片方法
-    async customAction (file, component) {
-      const key = file.name;
+    customAction (file, component) {
+      console.log(file.active)
+      const key = this.uuid();
       const token = this.qiToken; //从服务器拿的并存在本地data里
       const putExtra = {
-        fname: "",
+        fname: '',
         params: {},
         mimeType: []
       };
@@ -711,21 +714,51 @@ export default {
         useCdnDomain: true //使用cdn加速
       };
       const observable = qiniu.upload(file.file, key, token, putExtra, config);
-      //   console.log(observable);
       observable.subscribe({
         next: result => {
-          // 主要用来展示进度
-          console.log(result);
+          console.log(file.active)
+          this.files.forEach(item => {
+            if (item.name === file.name) {
+              item.progress = result.total.percent
+            }
+          })
         },
         error: () => {
-          this.$message("上传图片失败");
+          this.$message(`${file.name}上传失败`);
         },
         complete: res => {
-          //   console.log(res);
+          this.keys.push(res.key);
+          console.log(this.keys.length);
+          if (this.files.length === this.keys.length) {
+            //   const imgUrls = this.files.map(item => {
+            //     return `${this.domain}/${item.name}`;
+            //   });
+            const imgUrls = this.keys.map(item => {
+              return `${this.domain}/${item}`;
+            });
+            const body = {
+              img: imgUrls,
+              description: this.addUploadDisc
+            };
+            upLoadImg(body).then(res => {
+              if (res.code === 1) {
+                this.$message({
+                  message: res.msg,
+                  type: "success"
+                });
+                this.addUploadDisc = "";
+                this.files = [];
+                this.viewSclImgs();
+              } else {
+                this.$message({
+                  message: res.msg,
+                  type: "error"
+                });
+              }
+            });
+          }
         }
       });
-      // return await component.uploadPut(file)
-      return await component.uploadHtml4(file);
     },
 
     /* 管理员设置弹窗 */
@@ -761,11 +794,11 @@ export default {
     },
     // 保存子账户
     saveUser () {
-      let newUser = {};
+      let newUser = [];
       this.loading = true;
-      this.tableData.forEach(item => {
+      newUser = this.tableData.filter(item => {
         if (item.isNew) {
-          newUser = {
+          return {
             account: item.account,
             name: item.name,
             duty: item.duty,
@@ -774,6 +807,7 @@ export default {
           };
         }
       });
+      newUser
       addTheUser(newUser).then(response => {
         if (response.code === 1) {
           this.loading = false;
@@ -793,7 +827,7 @@ export default {
     },
     //权限切换
     scopeChange (row) {
-      //   console.log(row);
+      if (!row.id) return;
       const body = {
         id: row.id,
         scope: row.scope
@@ -865,59 +899,45 @@ export default {
     //上传图片
     submitUpload () {
       if (!this.addUploadDisc) {
+        this.hasDesinfo = true;
         this.$message({
-          message: "请输入描述信息之后再进行上传操作！",
+          message: "请添加完照片并且输入描述信息之后再进行上传操作！",
           type: "warning"
         });
         return;
       }
-      this.loading = true;
+      if (this.files.length === 0) {
+        this.hasDesinfo = true;
+        this.$message({
+          message: "请添加完照片并且输入描述信息之后再进行上传操作！",
+          type: "warning"
+        });
+        return;
+      }
       this.$refs.uploader.active = true;
-      const imgUrls = this.files.map(item => {
-        return `${this.domain}/${item.name}`;
-      });
-      console.log(imgUrls);
-      const body = {
-        img: imgUrls,
-        description: this.addUploadDisc
-      };
-      upLoadImg(body).then(res => {
-        if (res.code === 1) {
-          this.loading = false;
-          this.$message({
-            message: res.msg,
-            type: "success"
-          });
-          this.addUploadDisc = "";
-          this.files = [];
-        } else {
-          this.$message({
-            message: res.msg,
-            type: "error"
-          });
-        }
-      });
+
     },
     cancleUpload () {
       this.$refs.uploader.active = false;
     },
     //查看学校图片
     viewSclImgs () {
-      if (this.selectedClass) { this.selectedClass.selected = false; }
+      if (this.selectedClass) { this.selectedClass.selected = false; this.selectedClass = "" }
       this.loading = true;
       this.isShow = true;
       this.resetTagsInput()
       schoolImg(null).then(res => {
+        this.allImgs = [];
         this.loading = false;
         if (res) {
           this.imgsInfo = res;
-          let imgs = [];
           this.imgsInfo.forEach(ele => {
             const extraUser = {
               user: {}
             }
             Object.assign(ele, extraUser)
             if (ele.user_group) {
+              let imgs = [];
               ele.user_group.forEach(item => {
                 imgs = imgs.concat(item.images)
               })
@@ -927,34 +947,50 @@ export default {
                 }
                 Object.assign(it, extra)
               })
-              console.log(imgs)
               const newExtra = {
                 imgs: imgs,
-                name: ele.name
+                name: ele.name,
+                isMore: false,
+                moreRow: false,
               }
               Object.assign(ele.user, newExtra)
             }
           })
-          console.log(this.imgsInfo)
           this.imgsInfo.forEach(item => {
             this.allImgs = this.allImgs.concat(item.user.imgs)
           })
 
-          this.imgsInfo = [...this.imgsInfo]
+          //   this.imgsInfo = [...this.imgsInfo]
+          this.rowDateheight();
+          const imgInfos = JSON.parse(JSON.stringify(this.imgsInfo))
+          this.imgsInfo = imgInfos
+          console.log(imgInfos)
         }
       })
-
-      //   this.allImgs = [...[]];
     },
 
     //选择图片
     changeImg (item) {
       if (!this.onEdit) {
+        this.dialogBigPic = true;
+        this.bigUrl = item.img_url;
         return;
       }
       item.isChoosed = !item.isChoosed;
-      console.log(item.isChoosed);
-      this.imgsInfo = [...this.imgsInfo]
+      const selectList = this.allImgs.filter(it => it.isChoosed === true)
+
+      if (selectList.length <= 20) {
+
+        this.imgsInfo = [...this.imgsInfo]
+      } else {
+        item.isChoosed = false;
+        this.imgsInfo = [...this.imgsInfo];
+        this.$message({
+          type: 'warning',
+          message: "最多选择20张图片"
+        })
+      }
+
     },
     cancleCircle () {
       this.onEdit = !this.onEdit;
@@ -1042,7 +1078,68 @@ export default {
         }
       })
       this.imgsInfo = [...this.imgsInfo]
+    },
+    nameBlur (row) {
+      const body = {
+        cn: row.name
+      }
+      getAccount(body).then(res => {
+        if (res && res.code === 1) {
+          row.account = res.data
+        }
+      })
+
+    },
+    desinfoChange (value) {
+      if (value) { this.hasDesinfo = false }
+    },
+    //图片搜索值监听
+    searchOperate (value) {
+      this.servalue = value;
+      if (!value) {
+        this.tagsList.forEach(item => item.selected = false)
+        this.uploadersList.forEach(item => item.selected = false)
+        this.dateTime = "";
+      }
+    },
+    changeIsMore (user) {
+      user.isMore = !user.isMore;
+      this.imgsInfo = [...this.imgsInfo]
+    },
+    rowDateheight () {
+      this.imgsInfo.forEach((item, index) => {
+        if (this.$refs && this.$refs[`element${index}`] && this.$refs[`element${index}`][0]) {
+          if (this.$refs[`element${index}`][0].offsetHeight > 230) {
+            item.user.moreRow = true
+          } else {
+            item.user.moreRow = false
+          }
+        }
+      })
+
+    },
+    //uuid
+    uuid () {
+      var s = [];
+      var hexDigits = "0123456789abcdef";
+      for (var i = 0; i < 36; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+      }
+      s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+      s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+      s[8] = s[13] = s[18] = s[23] = "-";
+
+      var uuid = s.join("");
+      return uuid;
+    },
+    uploadModal () {
+      this.dialogPhoto = true;
+      this.files = [];
+      this.addUploadDisc = "";
     }
+
+
+
   }
 };
 </script>
@@ -1074,7 +1171,7 @@ export default {
   line-height: 46px;
   margin-left: 25px;
   margin-bottom: 20px;
-  padding-left: 50px;
+  /* padding-left: 50px; */
   text-align: center;
   color: white;
   font-size: 18px;
@@ -1083,10 +1180,11 @@ export default {
 }
 .search-title::before {
   position: absolute;
-  left: 65px;
-  top: 16px;
+  right: 40px;
+  top: 13px;
   width: 16px;
   height: 16px;
+  transform: rotate(180deg);
   background-image: url("../../assets/images/向左_14.png");
   background-repeat: no-repeat;
   content: "";
@@ -1172,7 +1270,7 @@ export default {
   overflow: hidden;
 }
 .tags-row.more-row {
-  height: 54px;
+  max-height: 54px;
 }
 .tags-row span,
 .date-tag,
@@ -1180,7 +1278,7 @@ export default {
   display: inline-block;
   height: 22px;
   line-height: 20px;
-  padding: 0 12px;
+  padding: 0 10px 10px;
   margin-right: 30px;
   margin-bottom: 5px;
   border-radius: 2px;
@@ -1225,10 +1323,11 @@ export default {
 }
 .tags-row /deep/ .el-input__prefix,
 .tags-row /deep/ .el-input__suffix {
-  top: -9px;
+  top: -9px !important;
 }
 .add-photo-btn {
   display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
@@ -1258,7 +1357,7 @@ export default {
   font-size: 24px;
 }
 .date-tag {
-  margin-bottom: 12px;
+  /* margin-bottom: 12px; */
   cursor: default;
 }
 .photographer {
@@ -1269,23 +1368,27 @@ export default {
 }
 .scroll-photos {
   width: 100%;
-  overflow: auto;
 }
 .photos {
   display: flex;
   flex-wrap: wrap;
-  width: 1660px;
   background-color: #f1f1f1;
   padding-top: 10px;
   padding-left: 10px;
+  max-height: 232px;
+  overflow: hidden;
 }
+.more-imgs {
+  overflow: auto;
+  max-height: 100%;
+}
+
 .single-photo {
   position: relative;
   width: 100px;
   height: 100px;
-  margin-right: 10px;
-  margin-bottom: 10px;
   background-color: #fff;
+  margin: 0.3125rem 0.625rem;
 }
 .single-photo img {
   position: absolute;
@@ -1363,6 +1466,19 @@ export default {
   display: flex;
   flex-wrap: wrap;
 }
+.dialog-photo .before-upload-photos {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 180px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  transform: translate(-50%, -50%);
+}
 .dialog-photo .upload-single-photo {
   position: relative;
   width: 180px;
@@ -1432,6 +1548,9 @@ export default {
   margin-right: 20px;
   font-size: 18px;
   padding-left: 65px;
+  /* background-color: #fff; */
+  /* background-color: #f8b62b;
+  border-color: #f8b62b; */
 }
 .dialog-photo .start-upload::before {
   position: absolute;
@@ -1517,12 +1636,28 @@ export default {
   justify-content: flex-end;
   width: 100%;
   padding: 25px 50px;
-  border-top: 2px solid #e0e0e0;
+  /* border-top: 2px solid #e0e0e0; */
 }
 .el-input--suffix /deep/ .el-input__prefix {
   top: -8px;
   left: 5px;
   -webkit-transition: all 0.3s;
   transition: all 0.3s;
+}
+.moreClass {
+  position: relative;
+}
+.moreClass .moreChild {
+  margin-top: 5px;
+  font-size: 14px;
+  border: 1px solid #acacac;
+  padding-left: 20px;
+  width: 114px;
+  height: 22px;
+  position: absolute;
+  right: 0px;
+}
+.admin-main /deep/ .el-input__inner:focus {
+  border-bottom: 3px solid #f8b626;
 }
 </style>

@@ -41,7 +41,7 @@
         <el-link
           v-if="isNewUser"
           class="operatepsd"
-          @click="operatePsd"
+          @click="operatePsd($event.target.innerText)"
           :underline="false"
           v-bind:class="[isNewUser ? 'psdHighLight' : 'psdHighLight']"
           :disabled="isDisabled"
@@ -49,7 +49,7 @@
         <el-link
           v-if="!isNewUser"
           class="operatepsd"
-          @click="operatePsd"
+          @click="operatePsd($event.target.innerText)"
           :underline="false"
           v-bind:class="[pwdPass ? 'psdHighLight' : 'psdHighLight']"
           :disabled="pwdPass"
@@ -179,8 +179,13 @@ export default {
     },
 
     // 重置或者设置密码按钮事件
-    operatePsd () {
-      this.$router.push({ path: "password" });
+    operatePsd (value) {
+      this.$router.push({
+        path: "password",
+        query: {
+          name: value
+        }
+      });
     }
   }
 };

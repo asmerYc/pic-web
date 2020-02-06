@@ -62,15 +62,15 @@ img {
 }
 
 .el-button--warning {
-  color: #FFF;
+  color: #fff;
   background-color: #f8b626;
   border-color: #f8b626;
 }
 
 .el-input.is-active .el-input__inner,
 .el-input__inner:focus {
-  border-color: #DCDFE6;
-  outline: 0;
+  border-color: #dcdfe6;
+  outline: #f8b626 solid 2px;
 }
 
 .el-dialog__headerbtn:focus .el-dialog__close,
@@ -99,30 +99,30 @@ img {
 }
 
 /* 上传照片模态框 */
-@media only screen and (min-width: 1600px){
-    .dialog-photo .el-dialog {
-        width:1420px !important;
-    }
+@media only screen and (min-width: 1600px) {
+  .dialog-photo .el-dialog {
+    width: 1420px !important;
+  }
 }
 @media only screen and (min-width: 1400px) and (max-width: 1600px) {
-    .dialog-photo .el-dialog {
-        width:1220px !important;
-    }
+  .dialog-photo .el-dialog {
+    width: 1220px !important;
+  }
 }
 @media only screen and (min-width: 1100px) and (max-width: 1400px) {
-    .dialog-photo .el-dialog {
-        width:1020px !important;
-    }
+  .dialog-photo .el-dialog {
+    width: 1020px !important;
+  }
 }
 @media only screen and (min-width: 900px) and (max-width: 1100px) {
-    .dialog-photo .el-dialog {
-        width:820px !important;
-    }
+  .dialog-photo .el-dialog {
+    width: 820px !important;
+  }
 }
 @media only screen and (max-width: 900px) {
-    .dialog-photo .el-dialog {
-        width:620px !important;
-    }
+  .dialog-photo .el-dialog {
+    width: 620px !important;
+  }
 }
 .dialog-photo .el-dialog__header {
   padding: 10px 30px;
@@ -173,7 +173,7 @@ img {
   font-size: 13px;
 }
 
-.dialog-admin .el-table th>.cell {
+.dialog-admin .el-table th > .cell {
   margin-right: 0px;
   background-color: #f1f1f1;
 }
@@ -196,7 +196,7 @@ img {
   padding: 0px;
 }
 
-.dialog-admin .el-radio-button__orig-radio:checked+.el-radio-button__inner {
+.dialog-admin .el-radio-button__orig-radio:checked + .el-radio-button__inner {
   background-color: #f8b626;
   border-color: #f8b626;
   box-shadow: -1px 0 0 0 #f8b626;
