@@ -702,7 +702,6 @@ export default {
     },
     // 组件上传照片方法
     customAction (file, component) {
-      console.log(file.active)
       const key = this.uuid();
       const token = this.qiToken; //从服务器拿的并存在本地data里
       const putExtra = {
@@ -716,10 +715,9 @@ export default {
       const observable = qiniu.upload(file.file, key, token, putExtra, config);
       observable.subscribe({
         next: result => {
-          console.log(file.active)
           this.files.forEach(item => {
             if (item.name === file.name) {
-              item.progress = result.total.percent
+              item.progress = Math.floor(result.total.percent)
             }
           })
         },
@@ -728,11 +726,7 @@ export default {
         },
         complete: res => {
           this.keys.push(res.key);
-          console.log(this.keys.length);
           if (this.files.length === this.keys.length) {
-            //   const imgUrls = this.files.map(item => {
-            //     return `${this.domain}/${item.name}`;
-            //   });
             const imgUrls = this.keys.map(item => {
               return `${this.domain}/${item}`;
             });
@@ -1010,6 +1004,10 @@ export default {
         });
         return;
       }
+      this.$message({
+        type: "warning",
+        message: "照片内容过大，下载过程中请耐心等待！"
+      });
       selectList.forEach(item => {
         if (item.img_url) {
           let image = new Image();
@@ -1419,6 +1417,8 @@ export default {
   display: flex;
   justify-content: space-between;
   padding: 12px 64px;
+  background-image: url("../../assets/images/footer.png");
+  background-size: 100% 100%;
 }
 .footer button {
   width: 93px;
