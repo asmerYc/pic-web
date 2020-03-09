@@ -958,7 +958,6 @@ export default {
           this.rowDateheight();
           const imgInfos = JSON.parse(JSON.stringify(this.imgsInfo))
           this.imgsInfo = imgInfos
-          console.log(imgInfos)
         }
       })
     },
